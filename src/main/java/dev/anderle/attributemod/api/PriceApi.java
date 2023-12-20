@@ -5,19 +5,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.anderle.attributemod.Main;
 import org.apache.http.client.HttpResponseException;
-import org.apache.logging.log4j.Level;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.GeneralSecurityException;
-import java.security.cert.X509Certificate;
 
 public class PriceApi {
     public static final String URL = "https://anderle.dev/api";
@@ -25,6 +18,36 @@ public class PriceApi {
 
     private final String uuid;
     public PriceApi(String uuid) { this.uuid = uuid; }
+
+    /**
+     * Get ssl factory, that makes java trust my own connections.
+     * From https://github.com/TGWaffles/iTEM/blob/8b52fe19a706196d168a73b56078730aac9a5bd6/src/main/java/club/thom/tem/util/RequestUtil.java
+     */
+    private static SSLSocketFactory getAllowAllFactory() {
+        // Create a trust manager that does not validate certificate chains
+        TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+                    public void checkClientTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                    public void checkServerTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+
+        // Install the all-trusting trust manager
+        try {
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            return sc.getSocketFactory();
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
 
     public void refreshPrices() {
         request("/evaluate", "", new ResponseCallback() {
@@ -83,10 +106,11 @@ public class PriceApi {
             @Override
             public void run() { try {
                 URL url = new URL(URL + path + "?key=" + key + "&uuid=" + uuid + params);
-                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+                con.setSSLSocketFactory(getAllowAllFactory());
                 con.setRequestMethod("GET");
-                con.setConnectTimeout(5000);
-                con.setReadTimeout(5000);
+                con.setConnectTimeout(20000);
+                con.setReadTimeout(20000);
                 int status = con.getResponseCode();
                 if(status != 200) throw new HttpResponseException(status, con.getResponseMessage());
                 BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -98,34 +122,6 @@ public class PriceApi {
                 callback.onResponse(content.toString());
             } catch(IOException e) { callback.onError(e); } }
         }).start();
-    }
-
-    /**
-     * Does some crazy shit to make minecraft trust my api.
-     * https://stackoverflow.com/questions/2893819/accept-servers-self-signed-ssl-certificate-in-java-client
-     */
-    public void makeJavaTrustMyApi() {
-        TrustManager[] trustAllCerts = new TrustManager[] {
-            new X509TrustManager() {
-                public X509Certificate[] getAcceptedIssuers() {
-                    return new X509Certificate[0];
-                }
-                public void checkClientTrusted(
-                    X509Certificate[] certs, String authType) {
-                }
-                public void checkServerTrusted(
-                    X509Certificate[] certs, String authType) {
-                }
-            }
-        };
-
-        try {
-            SSLContext sc = SSLContext.getInstance("SSL");
-            sc.init(null, trustAllCerts, new java.security.SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-        } catch (GeneralSecurityException e) {
-            Main.LOGGER.error("Failed to allow access to the API:" + e.getMessage());
-        }
     }
 
     public interface ResponseCallback {

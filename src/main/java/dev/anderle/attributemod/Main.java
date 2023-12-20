@@ -64,7 +64,6 @@ public class Main {
         ClientCommandHandler.instance.registerCommand(new AuCommand());
         ClientCommandHandler.instance.registerCommand(new SettingsCommand());
 
-        api.makeJavaTrustMyApi();
         scheduler.registerTasks();
         scheduler.startExecutingTasks("ah");
 
