@@ -20,7 +20,7 @@ public class Helper {
      * Converts any number to a nice format.
      * @see <a href="https://stackoverflow.com/questions/4753251/how-to-go-about-formatting-1200-to-1-2k-in-java">Source</a>
      */
-    public String format(long value) {
+    public static String format(long value) {
         if (value == Long.MIN_VALUE) return format(Long.MIN_VALUE + 1);
         if (value < 0) return "-" + format(-value);
         if (value < 1000) return Long.toString(value);
@@ -37,7 +37,7 @@ public class Helper {
     /**
      * Convert attribute names from nbt data to the format that I use.
      */
-    public String formatAttribute(String attribute) {
+    public static String formatAttribute(String attribute) {
         String result = WordUtils.capitalize(attribute.replaceAll("_", " "));
         if(result.equals("Mending")) result = "Vitality";
         return result;
@@ -46,7 +46,7 @@ public class Helper {
     /**
      * Get the most similar string to a given input. Uses Levenshtein Distance score.
      */
-    public String getBestMatch(String input, String[] toCompare) {
+    public static String getBestMatch(String input, String[] toCompare) {
         if(toCompare.length == 0) return input;
         else input = input.toLowerCase();
         int lowestDistance = Integer.MAX_VALUE;
@@ -64,23 +64,23 @@ public class Helper {
     /**
      * Get the most similar attribute from the list of supported attributes.
      */
-    public String getAttribute(String input) {
-        return this.getBestMatch(input, Constants.supportedAttributes);
+    public static String getAttribute(String input) {
+        return getBestMatch(input, Constants.supportedAttributes);
     }
 
-    public String itemIdToName(String id) {
-        String result = "";
+    public static String itemIdToName(String id) {
+        StringBuilder result = new StringBuilder();
         for(String part : id.split("_")) {
-            result += part.substring(0, 1) + part.substring(1).toLowerCase();
+            result.append(part.charAt(0)).append(part.substring(1).toLowerCase());
         }
-        return result.trim();
+        return result.toString().trim();
     }
 
     /**
      * Add a url encoded space (%20) between words of an attribute.
      * For example, "ManaPool" becomes "Mana%20Pool".
      */
-    public String urlEncodeAttribute(String string) {
+    public static String urlEncodeAttribute(String string) {
         return string.replaceAll("(.)([A-Z])", "$1%20$2");
     }
 }

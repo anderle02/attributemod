@@ -6,6 +6,8 @@ import com.google.gson.JsonParser;
 import dev.anderle.attributemod.utils.Constants;
 import dev.anderle.attributemod.Main;
 import dev.anderle.attributemod.api.PriceApi;
+import dev.anderle.attributemod.utils.Helper;
+import dev.anderle.attributemod.utils.ChatUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.command.CommandBase;
@@ -77,25 +79,37 @@ public class ApCommand extends CommandBase {
             return;
         }
         // extract attributes with levels and show the response
-        String firstAttribute = Main.helper.getBestMatch(args[0], Constants.supportedAttributes);
-        if(args.length == 1) {
-            showSinglePrices(sender, firstAttribute, 1, null);
-        } else if(args.length == 2) {
-            if(NumberUtils.isNumber(args[1])) showSinglePrices(sender, firstAttribute, parseInt(args[1]), null); // a1 l1
-            else showCombinationPrices(sender, firstAttribute, 0, Main.helper.getAttribute(args[1]), 0, null); // a1 a2
-        } else if(args.length == 3) {
-            if(NumberUtils.isNumber(args[2])) {
-                if(NumberUtils.isNumber(args[1])) wrongUsage(sender);
-                else showCombinationPrices(sender, firstAttribute, 0, Main.helper.getAttribute(args[1]), parseInt(args[2]), null); // a1 a2 l2
-            } else {
-                if(!NumberUtils.isNumber(args[1])) wrongUsage(sender);
-                else showCombinationPrices(sender, firstAttribute, parseInt(args[1]), Main.helper.getAttribute(args[2]), 0, null); // a1 l1 a2
+        String firstAttribute = Helper.getBestMatch(args[0], Constants.supportedAttributes);
+        switch(args.length) {
+            case 1: {
+                showSinglePrices(sender, firstAttribute, 1, null);
+                return;
             }
-        } else if(args.length == 4) {
-            if(!NumberUtils.isNumber(args[1]) || NumberUtils.isNumber(args[2]) || !NumberUtils.isNumber(args[3])) {
-                wrongUsage(sender);
-            } else showCombinationPrices(sender, firstAttribute, parseInt(args[1]), Main.helper.getAttribute(args[2]), parseInt(args[3]), null); // a1 l1 a2 l2
-        } else wrongUsage(sender);
+            case 2: {
+                if(NumberUtils.isNumber(args[1])) showSinglePrices(sender, firstAttribute, parseInt(args[1]), null); // a1 l1
+                else showCombinationPrices(sender, firstAttribute, 0, Helper.getAttribute(args[1]), 0, null); // a1 a2
+                return;
+            }
+            case 3: {
+                if(NumberUtils.isNumber(args[2])) {
+                    if(NumberUtils.isNumber(args[1])) wrongUsage(sender);
+                    else showCombinationPrices(sender, firstAttribute, 0, Helper.getAttribute(args[1]), parseInt(args[2]), null); // a1 a2 l2
+                } else {
+                    if(!NumberUtils.isNumber(args[1])) wrongUsage(sender);
+                    else showCombinationPrices(sender, firstAttribute, parseInt(args[1]), Helper.getAttribute(args[2]), 0, null); // a1 l1 a2
+                }
+                return;
+            }
+            case 4: {
+                if(!NumberUtils.isNumber(args[1]) || NumberUtils.isNumber(args[2]) || !NumberUtils.isNumber(args[3])) {
+                    wrongUsage(sender);
+                } else {
+                    showCombinationPrices(sender, firstAttribute, parseInt(args[1]), Helper.getAttribute(args[2]), parseInt(args[3]), null); // a1 l1 a2 l2
+                }
+                return;
+            }
+            default: wrongUsage(sender);
+        }
     }
 
     @Override
@@ -115,11 +129,11 @@ public class ApCommand extends CommandBase {
      */
     private void showSinglePrices(final ICommandSender sender, final String attribute, final int level, String appearance) {
         if(level < 1 || level > 10) {
-            Main.chatUtils.badNumber(sender, 1, 10);
+            ChatUtils.badNumber(sender, 1, 10);
             return;
         }
         Main.api.request("/attributeprice",
-            "&a1=" + Main.helper.urlEncodeAttribute(attribute) + "&l1=" + level + (appearance == null ? "" : "&appearance=" + appearance),
+            "&a1=" + Helper.urlEncodeAttribute(attribute) + "&l1=" + level + (appearance == null ? "" : "&appearance=" + appearance),
         new PriceApi.ResponseCallback() {
             @Override
             public void onResponse(String a) {
@@ -132,7 +146,7 @@ public class ApCommand extends CommandBase {
             public void onError(Exception e) {
                 int statusCode = e instanceof HttpResponseException
                     ? ((HttpResponseException) e).getStatusCode() : 0;
-                sender.addChatMessage(Main.chatUtils.errorMessage(e.getMessage(),
+                sender.addChatMessage(ChatUtils.errorMessage(e.getMessage(),
                     statusCode == 0 || statusCode == 400));
             }
         });
@@ -147,12 +161,12 @@ public class ApCommand extends CommandBase {
                                        String appearance
     ) {
         if(firstLevel < 0 || firstLevel > 10 || secondLevel < 0 || secondLevel > 10) {
-            Main.chatUtils.badNumber(sender, 1, 10);
+            ChatUtils.badNumber(sender, 1, 10);
             return;
         }
         Main.api.request("/attributeprice",
-        "&a1=" + Main.helper.urlEncodeAttribute(first) + "&l1=" + firstLevel
-            + "&a2=" + Main.helper.urlEncodeAttribute(second) + "&l2=" + secondLevel
+        "&a1=" + Helper.urlEncodeAttribute(first) + "&l1=" + firstLevel
+            + "&a2=" + Helper.urlEncodeAttribute(second) + "&l2=" + secondLevel
             + (appearance == null ? "" : "&appearance=" + appearance),
         new PriceApi.ResponseCallback() {
             @Override
@@ -166,7 +180,7 @@ public class ApCommand extends CommandBase {
             public void onError(Exception e) {
                 int statusCode = e instanceof HttpResponseException
                     ? ((HttpResponseException) e).getStatusCode() : 0;
-                sender.addChatMessage(Main.chatUtils.errorMessage(
+                sender.addChatMessage(ChatUtils.errorMessage(
                     "Failed to fetch attribute prices from the API: " + e.getMessage() + ".",
                     statusCode == 0 || statusCode == 400));
             }
@@ -189,7 +203,7 @@ public class ApCommand extends CommandBase {
      *                   "%%appearance%%" will be replaced with the clicked one.
      */
     private void decodeResponseAndSendText(JsonObject response, String newCommand) {
-        IChatComponent comp = Main.chatUtils.decodeToFancyChatMessage(response.get("text").getAsString());
+        IChatComponent comp = ChatUtils.decodeToFancyChatMessage(response.get("text").getAsString());
         JsonElement appearances = response.get("appearances");
         JsonElement currentAppearance = response.get("currentAppearance");
         if(!appearances.isJsonNull()) {
@@ -206,6 +220,6 @@ public class ApCommand extends CommandBase {
                 ))));
             }
         }
-        Main.chatUtils.resendChatMessage(this.chat, comp);
+        ChatUtils.resendChatMessage(this.chat, comp);
     }
 }

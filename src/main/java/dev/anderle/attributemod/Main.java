@@ -2,8 +2,6 @@ package dev.anderle.attributemod;
 
 import dev.anderle.attributemod.api.PriceApi;
 import dev.anderle.attributemod.features.*;
-import dev.anderle.attributemod.utils.ChatUtils;
-import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.Scheduler;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -32,14 +30,6 @@ public class Main {
      * Will probably use this for other features in the future I think.
      */
     public static final Scheduler scheduler = new Scheduler();
-    /**
-     * Mainly formatting of strings and numbers.
-     */
-    public static final Helper helper = new Helper();
-    /**
-     * Helper methods for the in game chat.
-     */
-    public static final ChatUtils chatUtils = new ChatUtils();
     /**
      * My private API that allows access to users with a valid key.
      */

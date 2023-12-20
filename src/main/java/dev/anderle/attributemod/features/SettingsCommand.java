@@ -60,7 +60,7 @@ public class SettingsCommand extends CommandBase {
                 + "Successfully " + EnumChatFormatting.YELLOW
                 + "changed your API key."
             ));
-        }
+        } else wrongUsage(sender);
     }
 
     @Override

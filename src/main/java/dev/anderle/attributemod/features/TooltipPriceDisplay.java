@@ -2,6 +2,7 @@ package dev.anderle.attributemod.features;
 
 import dev.anderle.attributemod.utils.Constants;
 import dev.anderle.attributemod.Main;
+import dev.anderle.attributemod.utils.Helper;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -32,12 +33,12 @@ public class TooltipPriceDisplay {
         int total = lbin;
         for(String line : toolTip) {
             for(String attribute : attributes) {
-                String attributeDisplayName = Main.helper.formatAttribute(attribute);
+                String attributeDisplayName = Helper.formatAttribute(attribute);
                 if(line.contains("\u00A7b" + attributeDisplayName + " ")) {
                     int level = attributeCompound.getInteger(attribute);
                     double price = Math.pow(2, level - 1) * Main.api.getAttributePrice(itemId, attributeDisplayName);
                     total += price - lbin;
-                    String newLine = line + " \u00A76" + Main.helper.format((long) price);
+                    String newLine = line + " \u00A76" + Helper.format((long) price);
                     int index = toolTip.indexOf(line);
                     lastAttributeIndex = index;
                     e.toolTip.remove(index);
@@ -50,13 +51,13 @@ public class TooltipPriceDisplay {
             String[] attributeArray = {};
             attributeArray = attributes.toArray(attributeArray);
             int price = Main.api.getCombinationPrice(itemId,
-                    Main.helper.formatAttribute(attributeArray[0]),
-                    Main.helper.formatAttribute(attributeArray[1]));
+                    Helper.formatAttribute(attributeArray[0]),
+                    Helper.formatAttribute(attributeArray[1]));
             total += price - lbin;
             if(total < lbin) total = lbin;
             e.toolTip.add(nextFreeIndex, "\u00A7bCombination: \u00A76"
-                    + Main.helper.format(price) + "\u00A7b Estimated Price: \u00A76"
-                    + Main.helper.format(total));
+                    + Helper.format(price) + "\u00A7b Estimated Price: \u00A76"
+                    + Helper.format(total));
         }
     }
     private String replaceExtraItemIdParts(String itemId) {

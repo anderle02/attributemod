@@ -5,6 +5,8 @@ import com.google.gson.JsonParser;
 import dev.anderle.attributemod.Main;
 import dev.anderle.attributemod.api.PriceApi;
 import dev.anderle.attributemod.utils.Constants;
+import dev.anderle.attributemod.utils.Helper;
+import dev.anderle.attributemod.utils.ChatUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.command.CommandBase;
@@ -62,36 +64,42 @@ public class AuCommand extends CommandBase {
         int from = parseInt(args[2]);
         int to = parseInt(args[3]);
         if(from < 0 || from > 10 || to < 0 || to > 10) {
-            Main.chatUtils.badNumber(sender, 0, 10);
+            ChatUtils.badNumber(sender, 0, 10);
             return;
         }
         if(to <= from) {
-            sender.addChatMessage(Main.chatUtils.errorMessage(
+            sender.addChatMessage(ChatUtils.errorMessage(
                 "The first level has to be lower than the second one.",
                 false
             ));
         }
-        String attribute = Main.helper.getBestMatch(args[0], Constants.supportedAttributes);
-        String item = Main.helper.getBestMatch(itemNameToId(args[1]), Constants.supportedItems);
+        String attribute = Helper.getBestMatch(args[0], Constants.supportedAttributes);
+        String item = Helper.getBestMatch(itemNameToId(args[1]), Constants.supportedItems);
         showResult(sender, attribute, item, from, to);
     }
 
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
         List<String> options = new ArrayList<String>();
-        if(args.length == 1) {
-            for(String attribute : Constants.supportedAttributes) {
-                if(attribute.toLowerCase().startsWith(args[args.length - 1].toLowerCase())) {
-                    options.add(attribute.replaceAll(" ", ""));
+        switch(args.length) {
+            case 1: {
+                for(String attribute : Constants.supportedAttributes) {
+                    if(attribute.toLowerCase().startsWith(args[args.length - 1].toLowerCase())) {
+                        options.add(attribute.replaceAll(" ", ""));
+                    }
                 }
+                break;
             }
-        } else if(args.length == 2) {
-            for(String item : Constants.supportedItems) {
-                String formattedItemId = Main.helper.itemIdToName(item);
-                if(formattedItemId.toLowerCase().startsWith(args[1].toLowerCase())) {
-                    options.add(formattedItemId);
+            case 2: {
+                for(String item : Constants.supportedItems) {
+                    String formattedItemId = Helper.itemIdToName(item);
+                    if(formattedItemId.toLowerCase().startsWith(args[1].toLowerCase())) {
+                        options.add(formattedItemId);
+                    }
                 }
+                break;
             }
+            default: break;
         }
         return options;
     }
@@ -102,13 +110,13 @@ public class AuCommand extends CommandBase {
     private void showResult(final ICommandSender sender, String attribute, String item, int from, int to) {
         final AuCommand self = this;
         Main.api.request("/attributeupgrade",
-            "&attribute=" + Main.helper.urlEncodeAttribute(attribute)
+            "&attribute=" + Helper.urlEncodeAttribute(attribute)
             + "&item=" + item + "&from=" + from + "&to=" + to,
         new PriceApi.ResponseCallback() {
             @Override
             public void onResponse(String a) {
                 JsonObject response = new JsonParser().parse(a).getAsJsonObject();
-                Main.chatUtils.resendChatMessage(self.chat, Main.chatUtils.decodeToFancyChatMessage(
+                ChatUtils.resendChatMessage(self.chat, ChatUtils.decodeToFancyChatMessage(
                     response.get("text").getAsString()
                 ));
             }
@@ -117,7 +125,7 @@ public class AuCommand extends CommandBase {
             public void onError(Exception e) {
                 int statusCode = e instanceof HttpResponseException
                     ? ((HttpResponseException) e).getStatusCode() : 0;
-                sender.addChatMessage(Main.chatUtils.errorMessage(e.getMessage(),
+                sender.addChatMessage(ChatUtils.errorMessage(e.getMessage(),
                     statusCode == 0 || statusCode == 400));
             }
         });

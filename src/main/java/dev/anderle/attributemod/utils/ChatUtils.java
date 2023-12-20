@@ -19,7 +19,7 @@ public class ChatUtils {
      * Get a nicely formatted error message that can be printed to the chat.
      * @param reportPlease Whether the mod should ask the user to report this error.
      */
-    public ChatComponentText errorMessage(String message, boolean reportPlease) {
+    public static ChatComponentText errorMessage(String message, boolean reportPlease) {
         ChatComponentText text = new ChatComponentText(
                 Constants.prefix + EnumChatFormatting.RED +
                 "An error occured trying to do this:\n" + EnumChatFormatting.GRAY + message
@@ -37,7 +37,7 @@ public class ChatUtils {
     /**
      * Convert a url string to a nicely formatted chat component.
      */
-    public IChatComponent chatLink(String name, String url, EnumChatFormatting color) {
+    public static IChatComponent chatLink(String name, String url, EnumChatFormatting color) {
         return new ChatComponentText(name)
             .setChatStyle(new ChatStyle().setChatClickEvent(new ClickEvent(
                     ClickEvent.Action.OPEN_URL, url
@@ -49,7 +49,7 @@ public class ChatUtils {
      * @param chat The chat instance of the game.
      * @param comp The chat component to resend.
      */
-    public void resendChatMessage(GuiNewChat chat, IChatComponent comp) {
+    public static void resendChatMessage(GuiNewChat chat, IChatComponent comp) {
         try {
             // check both "field_146252_h" and "chatLines" (with or without mappings)
             Field chatLinesField = FieldUtils.getField(chat.getClass(), "field_146252_h", true);
@@ -75,7 +75,7 @@ public class ChatUtils {
      *  - substrings that start with "%i" will add a ClickEvent to run the /viewauction command for auction id
      *  - substrings that start with "%n" will be shown as tooltip on HoverEvent
      */
-    public IChatComponent decodeToFancyChatMessage(String string) {
+    public static IChatComponent decodeToFancyChatMessage(String string) {
         IChatComponent comp = new ChatComponentText(Constants.prefix);
         for(String part : string.replaceAll("§", "\u00a7").split("#")) {
             if(part.startsWith("t")) {
@@ -104,7 +104,7 @@ public class ChatUtils {
     /**
      * Send a chat message to the sender that the entered number is invalid.
      */
-    public void badNumber(ICommandSender sender, int from, int to) {
+    public static void badNumber(ICommandSender sender, int from, int to) {
         sender.addChatMessage(new ChatComponentText(
             Constants.prefix + EnumChatFormatting.RED
             + "Please enter a valid number between " + EnumChatFormatting.DARK_RED
