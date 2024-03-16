@@ -15,13 +15,15 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
+
 @Mod(
     modid = Main.MODID, version = Main.VERSION,
     useMetadata = true, clientSideOnly = true, acceptedMinecraftVersions = "[1.8.9]"
 )
 public class Main {
     public static final String MODID = "attributemod";
-    public static final String VERSION = "1.0";
+    public static final String VERSION = "1.0.1";
     public static final String UUID = Minecraft.getMinecraft().getSession().getPlayerID();
     public static final Logger LOGGER = LogManager.getLogger(MODID);
 
@@ -38,10 +40,15 @@ public class Main {
      * This manages the config file which saves settings when the game is closed.
      */
     public static Config config;
+    /**
+     * The mod folder, used for the update checker to allow the user to directly open it.
+     */
+    public static File modFolder;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         config = new Config(event.getSuggestedConfigurationFile());
+        modFolder = event.getSourceFile().getParentFile();
     }
 
     @EventHandler
@@ -50,6 +57,7 @@ public class Main {
 
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(new TooltipPriceDisplay());
+        MinecraftForge.EVENT_BUS.register(new OneTimeMessage());
         ClientCommandHandler.instance.registerCommand(new ApCommand());
         ClientCommandHandler.instance.registerCommand(new AuCommand());
         ClientCommandHandler.instance.registerCommand(new SettingsCommand());

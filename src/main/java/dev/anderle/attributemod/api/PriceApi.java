@@ -105,7 +105,7 @@ public class PriceApi {
         new Thread(new Runnable() {
             @Override
             public void run() { try {
-                URL url = new URL(URL + path + "?key=" + key + "&uuid=" + uuid + params);
+                URL url = new URL(URL + path + "?key=" + key + "&uuid=" + uuid + "&version=" + Main.VERSION + params);
                 HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
                 con.setSSLSocketFactory(getAllowAllFactory());
                 con.setRequestMethod("GET");
