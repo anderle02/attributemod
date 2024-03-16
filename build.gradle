@@ -35,6 +35,10 @@ minecraft {
     // simply re-run your setup task after changing the mappings to update your workspace.
     mappings = "stable_20"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
+
+    // Code to only update version in here and not in the java file
+    replaceIn "src/main/java/dev/anderle/attributemod/Main.java"
+    replace "@@VERSION@@", project.version
 }
 
 dependencies {

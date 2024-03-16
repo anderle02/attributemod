@@ -23,7 +23,7 @@ import java.io.File;
 )
 public class Main {
     public static final String MODID = "attributemod";
-    public static final String VERSION = "1.0.1";
+    public static final String VERSION = "@@VERSION@@"; // is replaced with the version specified in build.gradle
     public static final String UUID = Minecraft.getMinecraft().getSession().getPlayerID();
     public static final Logger LOGGER = LogManager.getLogger(MODID);
 
