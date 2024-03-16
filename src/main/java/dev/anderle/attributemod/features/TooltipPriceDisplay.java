@@ -33,9 +33,13 @@ public class TooltipPriceDisplay {
         int total = lbin;
         for(String line : toolTip) {
             for(String attribute : attributes) {
+
                 String attributeDisplayName = Helper.formatAttribute(attribute);
-                if(line.contains("\u00A7b" + attributeDisplayName + " ")) {
-                    int level = attributeCompound.getInteger(attribute);
+                int level = attributeCompound.getInteger(attribute);
+                boolean containsAttribute = line.contains(attributeDisplayName + " ")
+                        && line.length() < 3 * attributeDisplayName.length(); // this is to filter lines that contain the word but are not actually a new attribute
+
+                if(containsAttribute) {
                     double price = Math.pow(2, level - 1) * Main.api.getAttributePrice(itemId, attributeDisplayName);
                     total += price - lbin;
                     String newLine = line + " \u00A76" + Helper.format((long) price);
