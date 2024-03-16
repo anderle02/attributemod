@@ -58,6 +58,7 @@ public class Main {
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(new TooltipPriceDisplay());
         MinecraftForge.EVENT_BUS.register(new OneTimeMessage());
+        MinecraftForge.EVENT_BUS.register(new ContainerValue());
         ClientCommandHandler.instance.registerCommand(new ApCommand());
         ClientCommandHandler.instance.registerCommand(new AuCommand());
         ClientCommandHandler.instance.registerCommand(new SettingsCommand());

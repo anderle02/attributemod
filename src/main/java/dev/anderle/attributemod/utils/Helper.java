@@ -83,4 +83,14 @@ public class Helper {
     public static String urlEncodeAttribute(String string) {
         return string.replaceAll("(.)([A-Z])", "$1%20$2");
     }
+
+    /**
+     * Remove parts of the item ID, that don't affect the prices of the item's attribute.
+     */
+    public static String removeExtraItemIdParts(String itemId) {
+        for(String part : Constants.itemIdPartsToIgnore) {
+            if(itemId.contains(part)) return itemId.replace(part, "");
+        }
+        return itemId;
+    }
 }

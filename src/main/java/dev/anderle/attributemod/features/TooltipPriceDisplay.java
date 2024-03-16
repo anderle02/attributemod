@@ -1,48 +1,43 @@
 package dev.anderle.attributemod.features;
 
-import dev.anderle.attributemod.utils.Constants;
-import dev.anderle.attributemod.Main;
 import dev.anderle.attributemod.utils.Helper;
+import dev.anderle.attributemod.utils.ItemWithAttributes;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 public class TooltipPriceDisplay {
 
     @SubscribeEvent
     public void onRenderToolTip(ItemTooltipEvent e) {
+        List<String> toolTip = new ArrayList<String>(e.toolTip);
+
         NBTTagCompound extra = e.itemStack.serializeNBT()
                 .getCompoundTag("tag").getCompoundTag("ExtraAttributes");
         NBTTagCompound attributeCompound = extra.getCompoundTag("attributes");
         String itemId = extra.getString("id");
 
         if(itemId == null || attributeCompound.getKeySet().size() == 0) return;
-        else itemId = replaceExtraItemIdParts(itemId);
+        else itemId = Helper.removeExtraItemIdParts(itemId);
 
-        List<String> toolTip = new ArrayList<String>(e.toolTip);
-
-        Set<String> attributes = attributeCompound.getKeySet();
-        if(attributes.size() == 0) return;
-        int lbin = Main.api.getLbin(itemId);
+        ItemWithAttributes item = new ItemWithAttributes(itemId);
+        for(String attribute : attributeCompound.getKeySet()) {
+            item.addAttribute(Helper.formatAttribute(attribute), attributeCompound.getInteger(attribute));
+        }
+        ItemWithAttributes.Evaluation price = item.getDetailedPrice();
 
         int lastAttributeIndex = 0;
-        int total = lbin;
         for(String line : toolTip) {
-            for(String attribute : attributes) {
-
-                String attributeDisplayName = Helper.formatAttribute(attribute);
-                int level = attributeCompound.getInteger(attribute);
-                boolean containsAttribute = line.contains(attributeDisplayName + " ")
-                        && line.length() < 3 * attributeDisplayName.length(); // this is to filter lines that contain the word but are not actually a new attribute
+            for(String attribute : price.getSinglePrices().keySet()) {
+                boolean containsAttribute = line.contains(attribute + " ")
+                    && line.length() < 3 * attribute.length(); // this is to filter lines that contain the word but are not actually a new attribute
 
                 if(containsAttribute) {
-                    double price = Math.pow(2, level - 1) * Main.api.getAttributePrice(itemId, attributeDisplayName);
-                    total += price - lbin;
-                    String newLine = line + " \u00A76" + Helper.format((long) price);
+                    String newLine = line + " \u00A76" + Helper.format(price.getSinglePrices().get(attribute));
                     int index = toolTip.indexOf(line);
                     lastAttributeIndex = index;
                     e.toolTip.remove(index);
@@ -50,25 +45,13 @@ public class TooltipPriceDisplay {
                 }
             }
         }
-        if(attributes.size() == 2) {
-            int nextFreeIndex = getIndexOfNextFreeLine(lastAttributeIndex, toolTip);
-            String[] attributeArray = {};
-            attributeArray = attributes.toArray(attributeArray);
-            int price = Main.api.getCombinationPrice(itemId,
-                    Helper.formatAttribute(attributeArray[0]),
-                    Helper.formatAttribute(attributeArray[1]));
-            total += price - lbin;
-            if(total < lbin) total = lbin;
-            e.toolTip.add(nextFreeIndex, "\u00A7bCombination: \u00A76"
-                    + Helper.format(price) + "\u00A7b Estimated Price: \u00A76"
-                    + Helper.format(total));
+        if(attributeCompound.getKeySet().size() == 2) {
+            e.toolTip.add(getIndexOfNextFreeLine(lastAttributeIndex, toolTip),
+                "\u00A7bCombination: \u00A76" +
+                Helper.format(price.getCombinationPrice()) +
+                "\u00A7b Estimated Price: \u00A76" + Helper.format(price.getEstimate())
+            );
         }
-    }
-    private String replaceExtraItemIdParts(String itemId) {
-        for(String part : Constants.itemIdPartsToIgnore) {
-            if(itemId.contains(part)) return itemId.replace(part, "");
-        }
-        return itemId;
     }
     private int getIndexOfNextFreeLine(int currentIndex, List<String> toolTip) {
         int index = currentIndex;
