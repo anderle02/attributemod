@@ -1,6 +1,7 @@
 package dev.anderle.attributemod.utils;
 
 import dev.anderle.attributemod.Main;
+import net.minecraft.inventory.Slot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,13 +9,15 @@ import java.util.List;
 import java.util.Map;
 
 public class ItemWithAttributes {
-    private final HashMap<String, Integer> attributes = new HashMap<String, Integer>();
+    private final HashMap<String, Integer> attributes = new HashMap<>();
+    private final Slot slot;
     private final String id;
     private final String displayName;
     private Evaluation price;
 
-    public ItemWithAttributes(String itemId) {
+    public ItemWithAttributes(String itemId, Slot slot) {
         this.id = itemId;
+        this.slot = slot;
         this.displayName = Helper.itemIdToName(itemId);
     }
 
@@ -36,17 +39,17 @@ public class ItemWithAttributes {
         int lbin = Main.api.getLbin(this.id);
         int estimate = lbin;
 
-        HashMap<String, Integer> singlePrices = new HashMap<String, Integer>();
+        HashMap<String, Integer> singlePrices = new HashMap<>();
         for(Map.Entry<String, Integer> attribute : this.attributes.entrySet()) {
             double singlePrice = Math.pow(2, attribute.getValue() - 1)
                     * Main.api.getAttributePrice(this.id, attribute.getKey());
             singlePrices.put(attribute.getKey(), (int) singlePrice);
-            estimate += singlePrice - lbin;
+            estimate += (int) (singlePrice - lbin);
         }
 
         int combinationPrice = 0;
         if(this.attributes.size() == 2) {
-            List<String> targetList = new ArrayList<String>(this.attributes.keySet());
+            List<String> targetList = new ArrayList<>(this.attributes.keySet());
             combinationPrice = Main.api.getCombinationPrice(this.id, targetList.get(0), targetList.get(1));
             estimate += combinationPrice - lbin;
         }
@@ -59,6 +62,10 @@ public class ItemWithAttributes {
 
     public String getDisplayName() {
         return this.displayName;
+    }
+
+    public Slot getSlot() {
+        return this.slot;
     }
 
     public static class Evaluation {

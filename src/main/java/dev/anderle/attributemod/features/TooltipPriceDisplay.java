@@ -8,23 +8,22 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class TooltipPriceDisplay {
 
     @SubscribeEvent
     public void onRenderToolTip(ItemTooltipEvent e) {
-        List<String> toolTip = new ArrayList<String>(e.toolTip);
+        List<String> toolTip = new ArrayList<>(e.toolTip);
 
         NBTTagCompound extra = e.itemStack.serializeNBT()
                 .getCompoundTag("tag").getCompoundTag("ExtraAttributes");
         NBTTagCompound attributeCompound = extra.getCompoundTag("attributes");
         String itemId = extra.getString("id");
 
-        if(itemId == null || attributeCompound.getKeySet().size() == 0) return;
+        if(itemId == null || attributeCompound.getKeySet().isEmpty()) return;
         else itemId = Helper.removeExtraItemIdParts(itemId);
 
-        ItemWithAttributes item = new ItemWithAttributes(itemId);
+        ItemWithAttributes item = new ItemWithAttributes(itemId, null);
         for(String attribute : attributeCompound.getKeySet()) {
             item.addAttribute(Helper.formatAttribute(attribute), attributeCompound.getInteger(attribute));
         }

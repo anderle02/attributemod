@@ -14,6 +14,10 @@ buildscript {
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 
+compileJava { // Make gradle use Java 8 to allow lambdas and stuff.
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+}
 /*
 // for people who want stable - not yet functional for MC 1.8.8 - we require the forgegradle 2.1 snapshot
 plugins {
