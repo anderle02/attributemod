@@ -73,7 +73,7 @@ public class AuCommand extends CommandBase {
                 false
             ));
         }
-        String attribute = Helper.getBestMatch(args[0], Constants.supportedAttributes);
+        String attribute = Helper.getAttribute(args[0]);
         String item = Helper.getBestMatch(itemNameToId(args[1]), Constants.supportedItems);
         showResult(sender, attribute, item, from, to);
     }

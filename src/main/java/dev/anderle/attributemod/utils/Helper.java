@@ -46,7 +46,9 @@ public class Helper {
      * Get the most similar attribute from the list of supported attributes.
      */
     public static String getAttribute(String input) {
-        return getBestMatch(input, Constants.supportedAttributes);
+        return Constants.aliases.containsKey(input)
+                ? Constants.aliases.get(input)
+                : getBestMatch(input, Constants.supportedAttributes);
     }
 
     public static String itemIdToName(String id, boolean withSpaces) {

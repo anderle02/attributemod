@@ -46,7 +46,7 @@ public class ApCommand extends CommandBase {
 
     @Override
     public List<String> getCommandAliases() {
-        List<String> aliases = new ArrayList<String>();
+        List<String> aliases = new ArrayList<>();
         aliases.add("ap");
         return aliases;
     }
@@ -79,7 +79,7 @@ public class ApCommand extends CommandBase {
             return;
         }
         // extract attributes with levels and show the response
-        String firstAttribute = Helper.getBestMatch(args[0], Constants.supportedAttributes);
+        String firstAttribute = Helper.getAttribute(args[0]);
         switch(args.length) {
             case 1: {
                 showSinglePrices(sender, firstAttribute, 1, null);
@@ -114,7 +114,7 @@ public class ApCommand extends CommandBase {
 
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
-        List<String> options = new ArrayList<String>();
+        List<String> options = new ArrayList<>();
         if(args.length < 5) for(String attribute : Constants.supportedAttributes) {
             if(attribute.toLowerCase().startsWith(args[args.length - 1].toLowerCase())) {
                 options.add(attribute.replaceAll(" ", ""));
@@ -180,8 +180,7 @@ public class ApCommand extends CommandBase {
             public void onError(Exception e) {
                 int statusCode = e instanceof HttpResponseException
                     ? ((HttpResponseException) e).getStatusCode() : 0;
-                sender.addChatMessage(ChatUtils.errorMessage(
-                    "Failed to fetch attribute prices from the API: " + e.getMessage() + ".",
+                sender.addChatMessage(ChatUtils.errorMessage(e.getMessage(),
                     statusCode == 0 || statusCode == 400));
             }
         });
