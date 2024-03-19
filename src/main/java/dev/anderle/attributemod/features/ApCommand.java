@@ -205,7 +205,8 @@ public class ApCommand extends CommandBase {
         IChatComponent comp = ChatUtils.decodeToFancyChatMessage(response.get("text").getAsString());
         JsonElement appearances = response.get("appearances");
         JsonElement currentAppearance = response.get("currentAppearance");
-        if(!appearances.isJsonNull()) {
+
+        if(appearances != null && currentAppearance != null) {
             comp.appendText("\n\n");
             for(JsonElement element : appearances.getAsJsonArray()) {
                 String appearance = element.getAsString();
