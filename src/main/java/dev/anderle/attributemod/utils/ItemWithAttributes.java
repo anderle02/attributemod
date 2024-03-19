@@ -18,7 +18,7 @@ public class ItemWithAttributes {
     public ItemWithAttributes(String itemId, Slot slot) {
         this.id = itemId;
         this.slot = slot;
-        this.displayName = Helper.itemIdToName(itemId);
+        this.displayName = Helper.itemIdToName(itemId, true);
     }
 
     public void addAttribute(String name, int level) {

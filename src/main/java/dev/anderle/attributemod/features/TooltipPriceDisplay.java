@@ -36,7 +36,7 @@ public class TooltipPriceDisplay {
                     && line.length() < 3 * attribute.length(); // this is to filter lines that contain the word but are not actually a new attribute
 
                 if(containsAttribute) {
-                    String newLine = line + " \u00A76" + Helper.format(price.getSinglePrices().get(attribute));
+                    String newLine = line + " \u00A76" + Helper.formatNumber(price.getSinglePrices().get(attribute));
                     int index = toolTip.indexOf(line);
                     lastAttributeIndex = index;
                     e.toolTip.remove(index);
@@ -47,8 +47,8 @@ public class TooltipPriceDisplay {
         if(attributeCompound.getKeySet().size() == 2) {
             e.toolTip.add(getIndexOfNextFreeLine(lastAttributeIndex, toolTip),
                 "\u00A7bCombination: \u00A76" +
-                Helper.format(price.getCombinationPrice()) +
-                "\u00A7b Estimated Price: \u00A76" + Helper.format(price.getEstimate())
+                Helper.formatNumber(price.getCombinationPrice()) +
+                "\u00A7b Estimated Price: \u00A76" + Helper.formatNumber(price.getEstimate())
             );
         }
     }

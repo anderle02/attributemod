@@ -3,35 +3,16 @@ package dev.anderle.attributemod.utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 
-import java.util.*;
+import java.text.DecimalFormat;
 
 public class Helper {
-    private static final NavigableMap<Long, String> suffixes = new TreeMap<Long, String>();
-    static {
-        suffixes.put(1000L, "k");
-        suffixes.put(1000000L, "M");
-        suffixes.put(1000000000L, "G");
-        suffixes.put(1000000000000L, "T");
-        suffixes.put(1000000000000000L, "P");
-        suffixes.put(1000000000000000000L, "E");
-    }
+    public static String formatNumber(double number) {
+        DecimalFormat df = new DecimalFormat("###.#");
 
-    /**
-     * Converts any number to a nice format.
-     * @see <a href="https://stackoverflow.com/questions/4753251/how-to-go-about-formatting-1200-to-1-2k-in-java">Source</a>
-     */
-    public static String format(long value) {
-        if (value == Long.MIN_VALUE) return format(Long.MIN_VALUE + 1);
-        if (value < 0) return "-" + format(-value);
-        if (value < 1000) return Long.toString(value);
-
-        Map.Entry<Long, String> e = suffixes.floorEntry(value);
-        Long divideBy = e.getKey();
-        String suffix = e.getValue();
-
-        long truncated = value / (divideBy / 10); //the number part of the output times 10
-        boolean hasDecimal = truncated < 100 && (truncated / 10d) != (truncated / 10d);
-        return hasDecimal ? (truncated / 10d) + suffix : (truncated / 10) + suffix;
+        if (number < 1000) return df.format(number);
+        else if (number < 1e6) return df.format(number / 1e3) + "k";
+        else if (number < 1e9) return df.format(number / 1e6) + "M";
+        else return df.format(number / 1e9) + "B";
     }
 
     /**
@@ -68,9 +49,10 @@ public class Helper {
         return getBestMatch(input, Constants.supportedAttributes);
     }
 
-    public static String itemIdToName(String id) {
+    public static String itemIdToName(String id, boolean withSpaces) {
         StringBuilder result = new StringBuilder();
         for(String part : id.split("_")) {
+            if(withSpaces) result.append(" ");
             result.append(part.charAt(0)).append(part.substring(1).toLowerCase());
         }
         return result.toString().trim();

@@ -54,7 +54,7 @@ public class ContainerValue {
         }
 
         if(!toRender.isEmpty()) renderOverlay(((GuiChest) e.gui), toRender,
-                new Point((e.gui.width + CHEST_GUI_WIDTH) / 2, (e.gui.height - CHEST_GUI_HEIGHT) / 2));
+                new Point((e.gui.width + CHEST_GUI_WIDTH) / 2 + 5, (e.gui.height - CHEST_GUI_HEIGHT) / 2));
     }
 
     @SubscribeEvent // When Minecraft draws the foreground, highlight the slot if the user is hovering over an item.
@@ -68,8 +68,7 @@ public class ContainerValue {
     public void onMouseInput(GuiScreenEvent.MouseInputEvent e) {
         if(!(e.gui instanceof GuiChest) || toRender.isEmpty()) { currentItem = -1; return; }
 
-
-        Point overlayPos = new Point((e.gui.width + CHEST_GUI_WIDTH) / 2, (e.gui.height - CHEST_GUI_HEIGHT) / 2);
+        Point overlayPos = new Point((e.gui.width + CHEST_GUI_WIDTH) / 2 + 5, (e.gui.height - CHEST_GUI_HEIGHT) / 2);
         Point rawMousePos = new Point(Mouse.getEventX(), Mouse.getEventY());
         Point mousePos = new Point(
                 rawMousePos.x * e.gui.width / e.gui.mc.displayWidth,
@@ -124,24 +123,22 @@ public class ContainerValue {
 
     private ArrayList<String> getOverlay(ItemWithAttributes[] items) {
         ArrayList<String> toDisplay = new ArrayList<>();
+
         for(ItemWithAttributes item : items) {
             ItemWithAttributes.Evaluation price = item.getDetailedPrice();
             String[] attributeNames = item.getAttributeNames();
             Integer[] attributeLevels = item.getAttributeLevels();
             String itemName = item.getDisplayName();
 
-            StringBuilder displayString = new StringBuilder()
-                    .append(EnumChatFormatting.GOLD).append(Helper.format(price.getEstimate()))
-                    .append(" ").append(EnumChatFormatting.YELLOW).append(itemName)
-                    .append(" ").append(EnumChatFormatting.AQUA).append(attributeNames[0])
-                    .append(" ").append(attributeLevels[0]);
+            String displayString = EnumChatFormatting.GOLD + Helper.formatNumber(price.getEstimate()) + " "
+                    + EnumChatFormatting.YELLOW + " " + itemName + " - " + EnumChatFormatting.GREEN + "["
+                    + EnumChatFormatting.AQUA + attributeNames[0] + " " + attributeLevels[0]
+                    + EnumChatFormatting.GREEN + "]";
 
-            if(attributeNames.length == 2) displayString
-                    .append(EnumChatFormatting.YELLOW)
-                    .append(", ").append(EnumChatFormatting.AQUA).append(attributeNames[1])
-                    .append(" ").append(attributeLevels[1]);
+            if(attributeNames.length == 2) displayString += " [" + EnumChatFormatting.AQUA + attributeNames[1]
+                    + " " + attributeLevels[1] + EnumChatFormatting.GREEN + "]";
 
-            toDisplay.add(displayString.toString());
+            toDisplay.add(displayString);
         }
         return toDisplay;
     }
@@ -149,7 +146,7 @@ public class ContainerValue {
     private void renderOverlay(GuiChest gui, ArrayList<String> strings, Point overlayPos) {
         for(int i = 0; i < strings.size(); i++) {
             gui.drawString(
-                    gui.mc.fontRendererObj, strings.get(i),
+                    gui.mc.fontRendererObj, i == currentItem ? highlightItemString(strings.get(i)) : strings.get(i),
                     overlayPos.x, overlayPos.y + i * (gui.mc.fontRendererObj.FONT_HEIGHT + 1),
                     0xffffffff
             );
@@ -162,5 +159,12 @@ public class ContainerValue {
                 (gui.height - CHEST_GUI_HEIGHT) / 2 + slot.yDisplayPosition - 1
         );
         GuiChest.drawRect(slotPos.x, slotPos.y, slotPos.x + SLOT_SIZE, slotPos.y + SLOT_SIZE, 0xff00aa00);
+    }
+
+    private String highlightItemString(String str) {
+        return str.replace("" + EnumChatFormatting.GOLD, "" + EnumChatFormatting.RED)
+                .replace("" + EnumChatFormatting.GREEN, "" + EnumChatFormatting.DARK_GREEN)
+                .replace("" + EnumChatFormatting.YELLOW, "" + EnumChatFormatting.GOLD)
+                .replace("" + EnumChatFormatting.AQUA, "" + EnumChatFormatting.BLUE);
     }
 }

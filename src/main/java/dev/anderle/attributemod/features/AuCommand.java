@@ -43,7 +43,7 @@ public class AuCommand extends CommandBase {
 
     @Override
     public List<String> getCommandAliases() {
-        List<String> aliases = new ArrayList<String>();
+        List<String> aliases = new ArrayList<>();
         aliases.add("au");
         return aliases;
     }
@@ -80,7 +80,7 @@ public class AuCommand extends CommandBase {
 
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
-        List<String> options = new ArrayList<String>();
+        List<String> options = new ArrayList<>();
         switch(args.length) {
             case 1: {
                 for(String attribute : Constants.supportedAttributes) {
@@ -92,7 +92,7 @@ public class AuCommand extends CommandBase {
             }
             case 2: {
                 for(String item : Constants.supportedItems) {
-                    String formattedItemId = Helper.itemIdToName(item);
+                    String formattedItemId = Helper.itemIdToName(item, false);
                     if(formattedItemId.toLowerCase().startsWith(args[1].toLowerCase())) {
                         options.add(formattedItemId);
                     }
