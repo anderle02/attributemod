@@ -1,5 +1,6 @@
 package dev.anderle.attributemod.features;
 
+import dev.anderle.attributemod.Main;
 import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.ItemWithAttributes;
 import net.minecraft.client.gui.GuiScreen;
@@ -41,7 +42,9 @@ public class ContainerValue {
 
     @SubscribeEvent // When Minecraft draws the background, render the overlay, so tooltips are displayed above.
     public void onDrawGuiBackground(GuiScreenEvent.BackgroundDrawnEvent e) {
-        if(!(e.gui instanceof GuiChest)) return;
+        if(Main.api.data == null) return; // don't show or update the overlay if there is no data
+        if(!(e.gui instanceof GuiChest)) return; // skip if gui is not a chest
+
         if(System.currentTimeMillis() - UPDATE_INTERVAL > lastItemUpdate) {
             List<Slot> allSlots = ((GuiChest) e.gui).inventorySlots.inventorySlots;
             ItemWithAttributes[] items = getValidItems(allSlots.subList(0, allSlots.size() - 36));

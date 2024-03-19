@@ -21,7 +21,7 @@ public class PriceApi {
 
     /**
      * Get ssl factory, that makes java trust my own connections.
-     * From https://github.com/TGWaffles/iTEM/blob/8b52fe19a706196d168a73b56078730aac9a5bd6/src/main/java/club/thom/tem/util/RequestUtil.java
+     * From <a href="https://github.com/TGWaffles/iTEM/blob/8b52fe19a706196d168a73b56078730aac9a5bd6/src/main/java/club/thom/tem/util/RequestUtil.java">...</a>
      */
     private static SSLSocketFactory getAllowAllFactory() {
         // Create a trust manager that does not validate certificate chains
@@ -56,7 +56,9 @@ public class PriceApi {
                 data = new JsonParser().parse(a).getAsJsonObject();
             }
             @Override
-            public void onError(Exception e) {}
+            public void onError(Exception e) {
+                data = null;
+            }
         });
     }
 
@@ -100,11 +102,9 @@ public class PriceApi {
 
     public void request(final String path, final String params, final ResponseCallback callback) {
         final String key = Main.config.get().get("Main Settings", "key", "").getString();
-        final String uuid = this.uuid;
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() { try {
+        new Thread(() -> {
+            try {
                 URL url = new URL(URL + path + "?key=" + key + "&uuid=" + uuid + "&version=" + Main.VERSION + params);
                 HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
                 con.setSSLSocketFactory(getAllowAllFactory());
@@ -120,7 +120,7 @@ public class PriceApi {
                 in.close();
                 con.disconnect();
                 callback.onResponse(content.toString());
-            } catch(IOException e) { callback.onError(e); } }
+            } catch(IOException e) { callback.onError(e); }
         }).start();
     }
 
