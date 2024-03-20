@@ -25,6 +25,8 @@ public class ContainerValue {
     public static final int SLOT_SIZE = 16;
     // Don't update item prices with every BackgroundDrawnEvent, use the interval specified below instead.
     public static final int UPDATE_INTERVAL = 1000;
+    // Whether the overlay is enabled, toggle with TAB key.
+    private boolean enabled = true;
     // Stores the last time when items and their prices have been updated.
     private long lastItemUpdate = 0;
     // Stores the overlay to be rendered with next BackgroundDrawnEvent.
@@ -42,7 +44,7 @@ public class ContainerValue {
 
     @SubscribeEvent // When Minecraft draws the background, render the overlay, so tooltips are displayed above.
     public void onDrawGuiBackground(GuiScreenEvent.BackgroundDrawnEvent e) {
-        if(Main.api.data == null) return; // don't show or update the overlay if there is no data
+        if(!enabled || Main.api.data == null) return; // don't show or update the overlay if there is no data or if disabled
         if(!(e.gui instanceof GuiChest)) return; // skip if gui is not a chest
 
         if(System.currentTimeMillis() - UPDATE_INTERVAL > lastItemUpdate) {
@@ -62,14 +64,21 @@ public class ContainerValue {
 
     @SubscribeEvent // When Minecraft draws the foreground, highlight the slot if the user is hovering over an item.
     public void onDrawGuiForeground(GuiScreenEvent.DrawScreenEvent e) {
-        if(currentItem != -1 && currentItem < toRender.size()) {
+        if(enabled && currentItem != -1 && currentItem < toRender.size()) {
             highlightSlot(itemSlotMapping.get(currentItem), e.gui);
         }
     }
 
+    @SubscribeEvent // Enable or disable the overlay when TAB key is pressed.
+    public void onKeyboardInput(GuiScreenEvent.KeyboardInputEvent.Post e) {
+        if(!(e.gui instanceof GuiChest) || toRender.isEmpty()) return;
+        if(Keyboard.getEventKey() != Keyboard.KEY_TAB || !Keyboard.isKeyDown(Keyboard.KEY_TAB)) return;
+        if(Keyboard.getEventKeyState()) enabled = !enabled;
+    }
+
     @SubscribeEvent // On mouse input (cursor moved), calculate its position and which item the user is hovering over.
     public void onMouseInput(GuiScreenEvent.MouseInputEvent e) {
-        if(!(e.gui instanceof GuiChest) || toRender.isEmpty()) { currentItem = -1; return; }
+        if(!enabled || !(e.gui instanceof GuiChest) || toRender.isEmpty()) { currentItem = -1; return; }
 
         Point overlayPos = new Point((e.gui.width + CHEST_GUI_WIDTH) / 2 + 5, (e.gui.height - CHEST_GUI_HEIGHT) / 2);
         Point rawMousePos = new Point(Mouse.getEventX(), Mouse.getEventY());
