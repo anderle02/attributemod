@@ -26,10 +26,10 @@ Use Minecraft's auto completion for attributes and items for faster use.
 
 ![](https://i.imgur.com/Z0cEcbO.png)
 ![](https://i.imgur.com/oupBn9Q.png)
-## Planned Features
-This mod is early in development, but a few features are planned. Please note, that this mod will stay lightweight, there won't be any features unrelated to attributes. Planned are:
-- aliases for attributes for even faster use
-- container value display: open any inventory or chest and find a summary of item values on the side
+### Chest Overlay
+This overlay summarizes all items with attributes in a chest, including their price. Items get highlighted if you hover over the list, and if you click an item, your mouse will be automatically moved to that item. Hold `Shift` to move the item directly to your inventory.
+
+![](https://i.imgur.com/qUse6Fs.gif)
 ## Security Note
 This is the **only** way to download the Attribute Mod. It's hosted nowhere else than [here](https://github.com/anderle02/attributemod/releases/latest). Anyone trying to send you this mod **is trying to steal your account**, especially if it's "free".
 ## Join Kuudra Gang!
