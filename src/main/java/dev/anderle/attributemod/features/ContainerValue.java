@@ -25,6 +25,10 @@ public class ContainerValue {
     public static final int SLOT_SIZE = 16;
     // Don't update item prices with every BackgroundDrawnEvent, use the interval specified below instead.
     public static final int UPDATE_INTERVAL = 1000;
+
+    // the current position of the overlay
+    private final Point overlayPos;
+
     // Whether the overlay is enabled, toggle with TAB key.
     private boolean enabled = true;
     // Stores the last time when items and their prices have been updated.
@@ -35,6 +39,14 @@ public class ContainerValue {
     private int currentItem = -1;
     // Stores which item is where, used to locate it when user interacts with the item list.
     private final Map<Integer, Slot> itemSlotMapping = new HashMap<>();
+
+    // helper variables for moving the overlay
+    private boolean moved = false;
+    private Point lastMousePos;
+
+    public ContainerValue() {
+        this.overlayPos = getPositionFromConfig();
+    }
 
     @SubscribeEvent // Reset when a new Gui was opened.
     public void onGuiOpen(GuiOpenEvent e) {
@@ -58,8 +70,13 @@ public class ContainerValue {
             lastItemUpdate = System.currentTimeMillis();
         }
 
-        if(!toRender.isEmpty()) renderOverlay(((GuiChest) e.gui), toRender,
-                new Point((e.gui.width + CHEST_GUI_WIDTH) / 2 + 5, (e.gui.height - CHEST_GUI_HEIGHT) / 2));
+        if(toRender.isEmpty()) return;
+
+        if(this.overlayPos.x == 0 && this.overlayPos.y == 0) { // set location to the default value
+            this.overlayPos.setLocation((e.gui.width + CHEST_GUI_WIDTH) / 2 + 5, (e.gui.height - CHEST_GUI_HEIGHT) / 2);
+        }
+
+        renderOverlay(((GuiChest) e.gui), toRender);
     }
 
     @SubscribeEvent // When Minecraft draws the foreground, highlight the slot if the user is hovering over an item.
@@ -78,35 +95,50 @@ public class ContainerValue {
 
     @SubscribeEvent // On mouse input (cursor moved), calculate its position and which item the user is hovering over.
     public void onMouseInput(GuiScreenEvent.MouseInputEvent e) {
+        // return if not enabled or no data
         if(!enabled || !(e.gui instanceof GuiChest) || toRender.isEmpty()) { currentItem = -1; return; }
 
-        Point overlayPos = new Point((e.gui.width + CHEST_GUI_WIDTH) / 2 + 5, (e.gui.height - CHEST_GUI_HEIGHT) / 2);
-        Point rawMousePos = new Point(Mouse.getEventX(), Mouse.getEventY());
         Point mousePos = new Point(
-                rawMousePos.x * e.gui.width / e.gui.mc.displayWidth,
-                e.gui.height - rawMousePos.y * e.gui.height / e.gui.mc.displayHeight
+                Mouse.getEventX() * e.gui.width / e.gui.mc.displayWidth,
+                e.gui.height - Mouse.getEventY() * e.gui.height / e.gui.mc.displayHeight
         );
 
-        if(mousePos.x < overlayPos.x) { currentItem = -1; return; }
-        int itemIndex = (mousePos.y - overlayPos.y) / (e.gui.mc.fontRendererObj.FONT_HEIGHT + 1);
+        // check if mouse is inside the overlay bounds
+        if(mousePos.x < this.overlayPos.x) { currentItem = -1; return; }
+        int itemIndex = (mousePos.y - this.overlayPos.y) / (e.gui.mc.fontRendererObj.FONT_HEIGHT + 1);
 
         if(itemIndex >= toRender.size() || itemIndex < 0) { currentItem = -1; return; }
-        if(mousePos.x >= overlayPos.x + e.gui.mc.fontRendererObj.getStringWidth(toRender.get(itemIndex))) { currentItem = -1; return; }
+        if(mousePos.x >= this.overlayPos.x + e.gui.mc.fontRendererObj.getStringWidth(toRender.get(itemIndex))) { currentItem = -1; return; }
 
         currentItem = itemIndex;
 
-        if(Mouse.getEventButton() != 0) return;
+        if(Mouse.getEventButton() == 0) { // move cursor to the item which was left-clicked in the list
+            Slot slot = itemSlotMapping.get(itemIndex);
+            Mouse.setCursorPosition(
+                    ((e.gui.width - CHEST_GUI_WIDTH) / 2 + slot.xDisplayPosition + SLOT_SIZE / 2) * e.gui.mc.displayWidth / e.gui.width,
+                    (e.gui.height - ((e.gui.height - CHEST_GUI_HEIGHT) / 2 + slot.yDisplayPosition + SLOT_SIZE / 2 - 1)) * e.gui.mc.displayHeight / e.gui.height
+            );
 
-        Slot slot = itemSlotMapping.get(itemIndex);
-        Mouse.setCursorPosition(
-                ((e.gui.width - CHEST_GUI_WIDTH) / 2 + slot.xDisplayPosition + SLOT_SIZE / 2) * e.gui.mc.displayWidth / e.gui.width,
-                (e.gui.height - ((e.gui.height - CHEST_GUI_HEIGHT) / 2 + slot.yDisplayPosition + SLOT_SIZE / 2 - 1)) * e.gui.mc.displayHeight / e.gui.height
-        );
+            if(!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) e.setCanceled(true);
+            else lastItemUpdate = 0; // Instantly schedule another update of the overlay because items were moved.
 
-        if(!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) e.setCanceled(true);
-        else lastItemUpdate = 0; // Instantly schedule another update of the overlay because items were moved.
+            currentItem = -1;
 
-        currentItem = -1;
+        } else if(Mouse.isButtonDown(2)) { // move the overlay with the mouse position
+            if(this.lastMousePos == null) this.lastMousePos = new Point(mousePos);
+            if(!this.lastMousePos.equals(mousePos)) {
+                this.overlayPos.translate(mousePos.x - this.lastMousePos.x, mousePos.y - this.lastMousePos.y);
+                this.lastMousePos.setLocation(mousePos);
+                this.moved = true;
+            }
+        }
+
+        if(this.moved && !Mouse.isButtonDown(2)) { // then the middle button was released and the new location must be saved
+            Main.config.set("overlayX", Integer.toString(this.overlayPos.x), "0");
+            Main.config.set("overlayY", Integer.toString(this.overlayPos.y), "0");
+            this.lastMousePos = null;
+            this.moved = false;
+        }
     }
 
     private ItemWithAttributes[] getValidItems(List<Slot> slotsToCheck) {
@@ -155,11 +187,11 @@ public class ContainerValue {
         return toDisplay;
     }
 
-    private void renderOverlay(GuiChest gui, ArrayList<String> strings, Point overlayPos) {
+    private void renderOverlay(GuiChest gui, ArrayList<String> strings) {
         for(int i = 0; i < strings.size(); i++) {
             gui.drawString(
                     gui.mc.fontRendererObj, i == currentItem ? highlightItemString(strings.get(i)) : strings.get(i),
-                    overlayPos.x, overlayPos.y + i * (gui.mc.fontRendererObj.FONT_HEIGHT + 1),
+                    this.overlayPos.x, this.overlayPos.y + i * (gui.mc.fontRendererObj.FONT_HEIGHT + 1),
                     0xffffffff
             );
         }
@@ -178,5 +210,12 @@ public class ContainerValue {
                 .replace("" + EnumChatFormatting.GREEN, "" + EnumChatFormatting.DARK_GREEN)
                 .replace("" + EnumChatFormatting.YELLOW, "" + EnumChatFormatting.GOLD)
                 .replace("" + EnumChatFormatting.AQUA, "" + EnumChatFormatting.BLUE);
+    }
+
+    private Point getPositionFromConfig() {
+        return new Point(
+                Main.config.get().get("Main Settings", "overlayX", "0").getInt(),
+                Main.config.get().get("Main Settings", "overlayY", "0").getInt()
+        );
     }
 }
