@@ -29,6 +29,10 @@ Use Minecraft's auto completion for attributes and items for faster use.
 ### Chest Overlay
 This overlay summarizes all items with attributes in a chest, including their price. Items get highlighted if you hover over the list, and if you click an item, your mouse will be automatically moved to that item. Hold `Shift` to move the item directly to your inventory.
 
+The overlay can be disabled with the `Tab` key and moved by holding your **middle** mouse button.
+
+NEW: **Copy to Clipboard** button and total value display!
+
 ![](https://github.com/anderle02/attributemod/blob/master/images/chest_overlay.gif)
 ## Security Note
 This is the **only** way to download the Attribute Mod. It's hosted nowhere else than [here](https://github.com/anderle02/attributemod/releases/latest). Anyone trying to send you this mod **is trying to steal your account**, especially if it's "free".
