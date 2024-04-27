@@ -208,8 +208,12 @@ public class ContainerValue {
 
     private void copyToClipboard() {
         StringBuilder toCopy = new StringBuilder("**Selling the following items**\n");
-        HashMap<String, Integer> items = new HashMap<>(); // summarize items that are the same
+        LinkedHashMap<String, Integer> items = new LinkedHashMap<>(); // summarize items that are the same
         for(String item : toRender) {
+            if(item.contains("Attribute Shard")) { // make attribute shards look nicer in the message
+                item = item.replace(" Attribute Shard -", "")
+                .replace("[", "").replace("]", "");
+            }
             Integer count = items.get(item);
             items.put(item, count == null ? 1 : count + 1);
         }
