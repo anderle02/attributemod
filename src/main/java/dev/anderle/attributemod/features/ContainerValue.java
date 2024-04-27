@@ -10,10 +10,13 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import scala.swing.Dialog;
 
+import javax.xml.transform.Result;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -104,40 +107,25 @@ public class ContainerValue {
         );
 
         // check if mouse is inside the overlay bounds
-        if(mousePos.x < this.overlayPos.x) { currentItem = -1; return; }
-        int itemIndex = (mousePos.y - this.overlayPos.y) / (e.gui.mc.fontRendererObj.FONT_HEIGHT + 1);
+        if(mousePos.x < overlayPos.x) { currentItem = -1; return; }
+        int itemIndex = (mousePos.y - overlayPos.y) / (e.gui.mc.fontRendererObj.FONT_HEIGHT + 1);
 
         if(itemIndex >= toRender.size() || itemIndex < 0) { currentItem = -1; return; }
-        if(mousePos.x >= this.overlayPos.x + e.gui.mc.fontRendererObj.getStringWidth(toRender.get(itemIndex))) { currentItem = -1; return; }
+        if(mousePos.x >= overlayPos.x + e.gui.mc.fontRendererObj.getStringWidth(toRender.get(itemIndex))) { currentItem = -1; return; }
 
         currentItem = itemIndex;
 
-        if(Mouse.getEventButton() == 0) { // move cursor to the item which was left-clicked in the list
-            Slot slot = itemSlotMapping.get(itemIndex);
-            Mouse.setCursorPosition(
-                    ((e.gui.width - CHEST_GUI_WIDTH) / 2 + slot.xDisplayPosition + SLOT_SIZE / 2) * e.gui.mc.displayWidth / e.gui.width,
-                    (e.gui.height - ((e.gui.height - CHEST_GUI_HEIGHT) / 2 + slot.yDisplayPosition + SLOT_SIZE / 2 - 1)) * e.gui.mc.displayHeight / e.gui.height
-            );
+        if(Mouse.getEventButton() == 0) moveCursorToItem(e, itemIndex);
 
-            if(!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) e.setCanceled(true);
-            else lastItemUpdate = 0; // Instantly schedule another update of the overlay because items were moved.
-
-            currentItem = -1;
-
-        } else if(Mouse.isButtonDown(2)) { // move the overlay with the mouse position
-            if(this.lastMousePos == null) this.lastMousePos = new Point(mousePos);
-            if(!this.lastMousePos.equals(mousePos)) {
-                this.overlayPos.translate(mousePos.x - this.lastMousePos.x, mousePos.y - this.lastMousePos.y);
-                this.lastMousePos.setLocation(mousePos);
-                this.moved = true;
-            }
+        if(Mouse.isButtonDown(2)) { // move the overlay with the mouse position
+            moveOverlay(mousePos, new Dimension(e.gui.width, e.gui.height));
+            moved = true;
         }
 
-        if(this.moved && !Mouse.isButtonDown(2)) { // then the middle button was released and the new location must be saved
-            Main.config.set("overlayX", Integer.toString(this.overlayPos.x), "0");
-            Main.config.set("overlayY", Integer.toString(this.overlayPos.y), "0");
-            this.lastMousePos = null;
-            this.moved = false;
+        if(moved && !Mouse.isButtonDown(2)) { // middle button was released, save new location to config
+            savePosToConfig();
+            lastMousePos = null;
+            moved = false;
         }
     }
 
@@ -185,6 +173,45 @@ public class ContainerValue {
             toDisplay.add(displayString);
         }
         return toDisplay;
+    }
+
+    private void savePosToConfig() {
+        Main.config.set("overlayX", Integer.toString(overlayPos.x), "0");
+        Main.config.set("overlayY", Integer.toString(overlayPos.y), "0");
+    }
+
+    private void moveOverlay(Point mousePos, Dimension guiSize) {
+        if(lastMousePos == null) lastMousePos = new Point(mousePos);
+
+        if(lastMousePos.equals(mousePos)) return;
+
+        Point newOverlayPos = new Point(
+                overlayPos.x + mousePos.x - lastMousePos.x,
+                overlayPos.y + mousePos.y - lastMousePos.y
+        );
+
+        if(newOverlayPos.x >= 1 && newOverlayPos.x <= guiSize.width - 200) {
+            overlayPos.setLocation(newOverlayPos.x, overlayPos.y);
+        }
+
+        if(newOverlayPos.y >= 1 && newOverlayPos.y <= guiSize.height - 200) {
+            overlayPos.setLocation(overlayPos.x, newOverlayPos.y);
+        }
+
+        lastMousePos.setLocation(mousePos);
+    }
+
+    private void moveCursorToItem(GuiScreenEvent.MouseInputEvent e, int itemIndex) {
+        Slot slot = itemSlotMapping.get(itemIndex);
+        Mouse.setCursorPosition(
+                ((e.gui.width - CHEST_GUI_WIDTH) / 2 + slot.xDisplayPosition + SLOT_SIZE / 2) * e.gui.mc.displayWidth / e.gui.width,
+                (e.gui.height - ((e.gui.height - CHEST_GUI_HEIGHT) / 2 + slot.yDisplayPosition + SLOT_SIZE / 2 - 1)) * e.gui.mc.displayHeight / e.gui.height
+        );
+
+        if(!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) e.setCanceled(true);
+        else lastItemUpdate = 0; // Instantly schedule another update of the overlay because items were moved.
+
+        currentItem = -1;
     }
 
     private void renderOverlay(GuiChest gui, ArrayList<String> strings) {
