@@ -22,50 +22,62 @@ public class ItemWithAttributes {
     }
 
     public void addAttribute(String name, int level) {
-        this.attributes.put(name, level);
+        attributes.put(name, level);
     }
 
     public String[] getAttributeNames() {
-        return this.attributes.keySet().toArray(new String[0]);
+        return attributes.keySet().toArray(new String[0]);
     }
 
     public Integer[] getAttributeLevels() {
-        return this.attributes.values().toArray(new Integer[0]);
+        return attributes.values().toArray(new Integer[0]);
     }
 
     public Evaluation getDetailedPrice() {
-        if(this.price != null) return this.price; // so it doesn't calculate more than 1 time
+        if(price != null) return price; // so it doesn't calculate more than 1 time
 
-        int lbin = Main.api.getLbin(this.id);
-        int estimate = lbin;
+        // lbin
+        int lbin = Main.api.getLbin(id);
 
-        HashMap<String, Integer> singlePrices = new HashMap<>();
-        for(Map.Entry<String, Integer> attribute : this.attributes.entrySet()) {
-            double singlePrice = Math.pow(2, attribute.getValue() - 1)
-                    * Main.api.getAttributePrice(this.id, attribute.getKey());
-            singlePrices.put(attribute.getKey(), (int) singlePrice);
-            estimate += (int) (singlePrice - lbin);
-        }
+        // single
+        HashMap<String, Integer> singlePricesMap = new HashMap<>();
+        int[] singlePricesArray = attributes.entrySet().stream().map(attribute -> {
+            int price = (int) Math.pow(2, attribute.getValue() - 1) * Main.api.getAttributePrice(id, attribute.getKey());
+            singlePricesMap.put(attribute.getKey(), price);
+            return price;
+        }).mapToInt(Integer::intValue).toArray();
 
-        int combinationPrice = 0;
-        if(this.attributes.size() == 2) {
-            List<String> targetList = new ArrayList<>(this.attributes.keySet());
-            combinationPrice = Main.api.getCombinationPrice(this.id, targetList.get(0), targetList.get(1));
-            estimate += combinationPrice - lbin;
-        }
+        // attribute shards
+        if(attributes.size() == 1) return new Evaluation(singlePricesMap, 0, singlePricesArray[0] + lbin);
 
+        // not attribute shards
+        Integer[] attributeLevels = getAttributeLevels();
+        int singlePrice = attributeLevels[0] < 6 && attributeLevels[1] < 6
+            ? Math.max(singlePricesArray[0], singlePricesArray[1]) - lbin
+            : singlePricesArray[0] + singlePricesArray[1] - 2 * lbin;
+
+        // hellfire rods
+        if(id.equals("HELLFIRE_ROD")) singlePrice += 2 * lbin;
+
+        // combination
+        String[] attributeNames = getAttributeNames();
+        int combinationPrice = Main.api.getCombinationPrice(id, attributeNames[0], attributeNames[1]);
+
+        // estimate
+        int estimate = singlePrice + combinationPrice;
         if(estimate < lbin) estimate = lbin;
+        if(estimate < singlePrice + lbin) estimate = singlePrice + lbin;
 
-        this.price = new Evaluation(singlePrices, combinationPrice, estimate);
-        return this.price;
+        price = new Evaluation(singlePricesMap, combinationPrice, estimate);
+        return price;
     }
 
     public String getDisplayName() {
-        return this.displayName;
+        return displayName;
     }
 
     public Slot getSlot() {
-        return this.slot;
+        return slot;
     }
 
     public static class Evaluation {
