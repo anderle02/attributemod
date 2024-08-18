@@ -2,9 +2,7 @@ package dev.anderle.attributemod;
 
 import dev.anderle.attributemod.api.PriceApi;
 import dev.anderle.attributemod.features.*;
-import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.Scheduler;
-import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;

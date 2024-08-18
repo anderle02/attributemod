@@ -3,13 +3,8 @@ package dev.anderle.attributemod.features;
 import dev.anderle.attributemod.Main;
 import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.ItemWithAttributes;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiChest;
-import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.inventory.ContainerChest;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
@@ -18,6 +13,8 @@ import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.GL11;
+
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.util.*;
@@ -33,17 +30,19 @@ public class ContainerValue {
 
     // the current position of the overlay
     private final Point overlayPos;
-
+    // the current scale (size) of the overlay, default is 1
+    private double overlayScale;
     // Whether the overlay is enabled, toggle with TAB key.
-    private boolean enabled = true;
+    private boolean enabled;
+
     // Stores the last time when items and their prices have been updated.
     private long lastItemUpdate = 0;
     // Stores the overlay to be rendered with next BackgroundDrawnEvent.
     private ArrayList<String> toRender = new ArrayList<>();
     // Stores the first line of the overlay including total value and the copy button.
     private String firstLine;
-    // Whether the copy to clipboard button is focused.
-    private boolean copyButtonFocused = false;
+    // Which overlay control button is focused: 0 - none, 1 - copy to clipboard, 2 - [+], 3 - [-]
+    private ControlButton focusedControlButton = ControlButton.NONE;
     // Fix for NEU's storage overlay to disable my overlay and stop weird behavior of the cursor.
     private boolean backgroundDrawnEventFiredOnce = false;
     // Stores which item the player is currently hovering over, as an index of toRender.
@@ -57,6 +56,8 @@ public class ContainerValue {
 
     public ContainerValue() {
         this.overlayPos = getPositionFromConfig();
+        this.overlayScale = getOverlayScaleFromConfig();
+        this.enabled = getOverlayEnabledFromConfig();
     }
 
     @SubscribeEvent // Reset when a new Gui was opened.
@@ -86,7 +87,7 @@ public class ContainerValue {
 
             firstLine = EnumChatFormatting.DARK_RED + "Total Value " + EnumChatFormatting.YELLOW +
                     "-" + EnumChatFormatting.GOLD + " " + Helper.formatNumber(totalValue) + EnumChatFormatting.GRAY +
-                    " [Copy to Clipboard]";
+                    " [Copy to Clipboard] [+] [-]";
             toRender = getOverlay(items);
 
             lastItemUpdate = System.currentTimeMillis();
@@ -114,7 +115,7 @@ public class ContainerValue {
         if(!backgroundDrawnEventFiredOnce) return;
         if(!(e.gui instanceof GuiChest) || toRender.isEmpty()) return;
         if(Keyboard.getEventKey() != Keyboard.KEY_TAB || !Keyboard.isKeyDown(Keyboard.KEY_TAB)) return;
-        if(Keyboard.getEventKeyState()) enabled = !enabled;
+        if(Keyboard.getEventKeyState()) toggleOverlay();
     }
 
     @SubscribeEvent // On mouse input (cursor moved), calculate its position and which item the user is hovering over.
@@ -124,35 +125,50 @@ public class ContainerValue {
         if(!enabled || !(e.gui instanceof GuiChest) || toRender.isEmpty()) { currentItem = -1; return; }
 
         // Copy items to clipboard if button was clicked.
-        if(copyButtonFocused && Mouse.isButtonDown(0)) {
+        if(focusedControlButton == ControlButton.CLIPBOARD && Mouse.isButtonDown(0)) {
             copyToClipboard();
-            copyButtonFocused = false;
+            focusedControlButton = ControlButton.NONE;
             return;
         }
 
-        Point mousePos = new Point( // The current mouse position in Minecraft gui coordinates.
-                Mouse.getEventX() * e.gui.width / e.gui.mc.displayWidth,
-                e.gui.height - Mouse.getEventY() * e.gui.height / e.gui.mc.displayHeight
-        );
+        // Change scale of the overlay if button was clicked.
+        if((focusedControlButton == ControlButton.LARGER || focusedControlButton == ControlButton.SMALLER) && Mouse.isButtonDown(0)) {
+            changeOverlayScale(focusedControlButton == ControlButton.SMALLER);
+            focusedControlButton = ControlButton.NONE;
+            return;
+        }
+
+        // The mouse position inverse scaled by overlayScale
+        double mousePosX = (double) Mouse.getEventX() * e.gui.width / e.gui.mc.displayWidth / overlayScale;
+        double mousePosY = (e.gui.height - (double) Mouse.getEventY() * e.gui.height / e.gui.mc.displayHeight) / overlayScale;
 
         // Check if mouse is inside the overlay bounds.
-        if(mousePos.x < overlayPos.x) { currentItem = -1; return; }
-        int itemIndex = (mousePos.y - overlayPos.y) / (e.gui.mc.fontRendererObj.FONT_HEIGHT + 1) - 1; // - 1 because of the top value line which is not an item
+        if(mousePosX < overlayPos.x) { currentItem = -1; return; }
+        int itemIndex = (int) Math.floor((mousePosY - overlayPos.y) / (e.gui.mc.fontRendererObj.FONT_HEIGHT + 1)) - 1; // - 1 because of the top value line which is not an item
 
-        copyButtonFocused = itemIndex == -1 // Check if the copy to clipboard button is focused.
+        if(itemIndex == -1 // Check if and which overlay control button is focused.
                 && !Mouse.isButtonDown(0)
-                && mousePos.x >= overlayPos.x + e.gui.mc.fontRendererObj.getStringWidth(firstLine.split("\\[Copy")[0])
-                && mousePos.x <= overlayPos.x + e.gui.mc.fontRendererObj.getStringWidth(firstLine);
+                && mousePosX >= overlayPos.x + e.gui.mc.fontRendererObj.getStringWidth(firstLine.split("\\[Copy")[0])
+                && mousePosX <= overlayPos.x + e.gui.mc.fontRendererObj.getStringWidth(firstLine)
+        ) {
+            if(mousePosX <= overlayPos.x + e.gui.mc.fontRendererObj.getStringWidth(firstLine.split(" \\[\\+]")[0])) {
+                focusedControlButton = ControlButton.CLIPBOARD;
+            } else if(mousePosX <= overlayPos.x + e.gui.mc.fontRendererObj.getStringWidth(firstLine.split(" \\[-]")[0])) {
+                focusedControlButton = ControlButton.LARGER;
+            } else {
+                focusedControlButton = ControlButton.SMALLER;
+            }
+        } else focusedControlButton = ControlButton.NONE;
 
         // Check if the current item is focused.
         if(itemIndex >= toRender.size() || itemIndex < 0) { currentItem = -1; return; }
-        if(mousePos.x >= overlayPos.x + e.gui.mc.fontRendererObj.getStringWidth(toRender.get(itemIndex))) { currentItem = -1; return; }
+        if(mousePosX >= overlayPos.x + e.gui.mc.fontRendererObj.getStringWidth(toRender.get(itemIndex))) { currentItem = -1; return; }
 
         currentItem = itemIndex;
 
         if(Mouse.getEventButton() == 0) moveCursorToItem(e, itemIndex);
         if(Mouse.isButtonDown(2)) { // move the overlay with the mouse position
-            moveOverlay(mousePos, new Dimension(e.gui.width, e.gui.height));
+            moveOverlay(new Point((int) Math.round(mousePosX), (int) Math.round(mousePosY)), new Dimension(e.gui.width, e.gui.height));
             moved = true;
         }
         if(moved && !Mouse.isButtonDown(2)) { // Middle button was released, save new location to config.
@@ -213,6 +229,28 @@ public class ContainerValue {
         Main.config.set("overlayY", Integer.toString(overlayPos.y), "0");
     }
 
+    private void changeOverlayScale(boolean smaller) {
+        if(smaller) overlayScale *= 0.9;
+        else overlayScale *= 1.1;
+        if(overlayScale < 0.25) overlayScale = 0.25;
+        if(overlayScale > 2.5) overlayScale = 2.5;
+
+        Main.config.set("overlayScale", Double.toString(overlayScale), "1.0");
+    }
+
+    private double getOverlayScaleFromConfig() {
+        return Main.config.get().get("Main Settings", "overlayScale", "1.0").getDouble();
+    }
+
+    private void toggleOverlay() {
+        enabled = !enabled;
+        Main.config.set("overlayEnabled", Boolean.toString(enabled), "true");
+    }
+
+    private boolean getOverlayEnabledFromConfig() {
+        return Main.config.get().get("Main Settings", "overlayEnabled", "true").getBoolean();
+    }
+
     private void copyToClipboard() {
         StringBuilder toCopy = new StringBuilder("**Selling the following items**\n");
         LinkedHashMap<String, Integer> items = new LinkedHashMap<>(); // summarize items that are the same
@@ -243,11 +281,11 @@ public class ContainerValue {
                 overlayPos.y + mousePos.y - lastMousePos.y
         );
 
-        if(newOverlayPos.x >= 1 && newOverlayPos.x <= guiSize.width - 200) {
+        if(newOverlayPos.x >= 1 && newOverlayPos.x * overlayScale <= guiSize.width - 200) {
             overlayPos.setLocation(newOverlayPos.x, overlayPos.y);
         }
 
-        if(newOverlayPos.y >= 1 && newOverlayPos.y <= guiSize.height - 200) {
+        if(newOverlayPos.y >= 1 && newOverlayPos.y * overlayScale <= guiSize.height - 200) {
             overlayPos.setLocation(overlayPos.x, newOverlayPos.y);
         }
 
@@ -261,21 +299,27 @@ public class ContainerValue {
                 (e.gui.height - ((e.gui.height - CHEST_GUI_HEIGHT) / 2 + slot.yDisplayPosition + SLOT_SIZE / 2 - 1)) * e.gui.mc.displayHeight / e.gui.height
         );
 
-        if(!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) e.setCanceled(true);
+        if(!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && e.isCancelable()) e.setCanceled(true);
         else lastItemUpdate = 0; // Instantly schedule another update of the overlay because items were moved.
 
         currentItem = -1;
     }
 
     private void renderOverlay(GuiChest gui, ArrayList<String> strings) {
+        GL11.glPushMatrix();
+        GL11.glScaled(overlayScale, overlayScale, 1);
+
         gui.drawString( // String containing total value and the "Copy to Clipboard" button.
-            gui.mc.fontRendererObj, copyButtonFocused ? highlightClipboardButton(firstLine) : firstLine,
-            this.overlayPos.x, this.overlayPos.y, 0xffffffff
+            gui.mc.fontRendererObj,
+            highlightControlButton(firstLine),
+            overlayPos.x,
+            overlayPos.y,
+            0xffffffff
         );
         for(int i = 0; i < strings.size(); i++) {
             gui.drawString(
                     gui.mc.fontRendererObj, i == currentItem ? highlightItemString(strings.get(i)) : strings.get(i),
-                    this.overlayPos.x, this.overlayPos.y + (i + 1) * (gui.mc.fontRendererObj.FONT_HEIGHT + 1),
+                    overlayPos.x, overlayPos.y + (i + 1) * (gui.mc.fontRendererObj.FONT_HEIGHT + 1),
                     0xffffffff
             );
         }
@@ -284,9 +328,10 @@ public class ContainerValue {
                 EnumChatFormatting.GRAY + "[" + EnumChatFormatting.DARK_GRAY +
                 "TAB " + EnumChatFormatting.GRAY + "to disable] [Hold " +
                 EnumChatFormatting.DARK_GRAY + "middle button " + EnumChatFormatting.GRAY + "to move]",
-                this.overlayPos.x, this.overlayPos.y + (strings.size() + 1) * (gui.mc.fontRendererObj.FONT_HEIGHT + 1),
+                overlayPos.x, overlayPos.y + (strings.size() + 1) * (gui.mc.fontRendererObj.FONT_HEIGHT + 1),
                 0xffffffff
         );
+        GL11.glPopMatrix();
     }
 
     private void highlightSlot(Slot slot, GuiScreen gui) {
@@ -304,8 +349,15 @@ public class ContainerValue {
                 .replace("" + EnumChatFormatting.AQUA, "" + EnumChatFormatting.BLUE);
     }
 
-    private String highlightClipboardButton(String str) {
-        return str.replace("[Copy to Clipboard]", EnumChatFormatting.YELLOW + "[Copy to Clipboard]" + EnumChatFormatting.GRAY);
+    private String highlightControlButton(String str) {
+        String toHighlight = "";
+        switch(focusedControlButton) {
+            case CLIPBOARD: toHighlight = "[Copy to Clipboard]"; break;
+            case LARGER: toHighlight = "[+]"; break;
+            case SMALLER: toHighlight = "[-]"; break;
+            default: return str;
+        }
+        return str.replace(toHighlight, EnumChatFormatting.YELLOW + toHighlight + EnumChatFormatting.GRAY);
     }
 
     private Point getPositionFromConfig() {
@@ -313,5 +365,9 @@ public class ContainerValue {
                 Main.config.get().get("Main Settings", "overlayX", "0").getInt(),
                 Main.config.get().get("Main Settings", "overlayY", "0").getInt()
         );
+    }
+
+    enum ControlButton {
+        NONE, CLIPBOARD, LARGER, SMALLER
     }
 }
