@@ -1,5 +1,6 @@
 package dev.anderle.attributemod.utils;
 
+import net.minecraft.client.Minecraft;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 
@@ -76,5 +77,11 @@ public class Helper {
             if(itemId.contains(part)) return itemId.replace(part, "");
         }
         return itemId;
+    }
+
+    public static String getPlayerUUID(Minecraft mc) {
+        return mc.thePlayer == null
+                ? mc.getSession().getPlayerID()
+                : mc.thePlayer.getUniqueID().toString().replaceAll("-", "");
     }
 }

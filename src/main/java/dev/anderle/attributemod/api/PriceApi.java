@@ -4,6 +4,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.anderle.attributemod.Main;
+import dev.anderle.attributemod.utils.Helper;
+import net.minecraft.client.Minecraft;
 import org.apache.http.client.HttpResponseException;
 
 import javax.net.ssl.*;
@@ -15,9 +17,6 @@ import java.net.URL;
 public class PriceApi {
     public static final String URL = "https://anderle.dev/api";
     public JsonObject data;
-
-    private final String uuid;
-    public PriceApi(String uuid) { this.uuid = uuid; }
 
     /**
      * Get ssl factory, that makes java trust my own connections.
@@ -102,6 +101,7 @@ public class PriceApi {
 
     public void request(final String path, final String params, final ResponseCallback callback) {
         final String key = Main.config.get().get("Main Settings", "key", "").getString();
+        final String uuid = Helper.getPlayerUUID(Minecraft.getMinecraft());
 
         new Thread(() -> {
             try {

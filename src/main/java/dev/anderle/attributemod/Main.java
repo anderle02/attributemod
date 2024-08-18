@@ -2,6 +2,7 @@ package dev.anderle.attributemod;
 
 import dev.anderle.attributemod.api.PriceApi;
 import dev.anderle.attributemod.features.*;
+import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.Scheduler;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -24,7 +25,6 @@ import java.io.File;
 public class Main {
     public static final String MODID = "attributemod";
     public static final String VERSION = "@@VERSION@@"; // is replaced with the version specified in build.gradle
-    public static final String UUID = Minecraft.getMinecraft().getSession().getPlayerID();
     public static final Logger LOGGER = LogManager.getLogger(MODID);
 
     /**
@@ -35,7 +35,7 @@ public class Main {
     /**
      * My private API that allows access to users with a valid key.
      */
-    public static final PriceApi api = new PriceApi(UUID);
+    public static final PriceApi api = new PriceApi();
     /**
      * This manages the config file which saves settings when the game is closed.
      */
