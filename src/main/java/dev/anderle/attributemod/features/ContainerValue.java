@@ -3,22 +3,21 @@ package dev.anderle.attributemod.features;
 import dev.anderle.attributemod.Main;
 import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.ItemWithAttributes;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiChest;
+import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.inventory.ContainerChest;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import scala.Array;
-import scala.swing.Dialog;
-
-import javax.xml.transform.Result;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.util.*;
@@ -45,6 +44,8 @@ public class ContainerValue {
     private String firstLine;
     // Whether the copy to clipboard button is focused.
     private boolean copyButtonFocused = false;
+    // Fix for NEU's storage overlay to disable my overlay and stop weird behavior of the cursor.
+    private boolean backgroundDrawnEventFiredOnce = false;
     // Stores which item the player is currently hovering over, as an index of toRender.
     private int currentItem = -1;
     // Stores which item is where, used to locate it when user interacts with the item list.
@@ -60,6 +61,7 @@ public class ContainerValue {
 
     @SubscribeEvent // Reset when a new Gui was opened.
     public void onGuiOpen(GuiOpenEvent e) {
+        backgroundDrawnEventFiredOnce = false;
         lastItemUpdate = 0;
         currentItem = -1;
     }
@@ -68,6 +70,8 @@ public class ContainerValue {
     public void onDrawGuiBackground(GuiScreenEvent.BackgroundDrawnEvent e) {
         if(!enabled || Main.api.data == null) return; // don't show or update the overlay if there is no data or if disabled
         if(!(e.gui instanceof GuiChest)) return; // skip if gui is not a chest
+
+        backgroundDrawnEventFiredOnce = true;
 
         if(System.currentTimeMillis() - UPDATE_INTERVAL > lastItemUpdate) {
             List<Slot> allSlots = ((GuiChest) e.gui).inventorySlots.inventorySlots;
@@ -99,6 +103,7 @@ public class ContainerValue {
 
     @SubscribeEvent // When Minecraft draws the foreground, highlight the slot if the user is hovering over an item.
     public void onDrawGuiForeground(GuiScreenEvent.DrawScreenEvent e) {
+        if(!backgroundDrawnEventFiredOnce) return;
         if(enabled && currentItem != -1 && currentItem < toRender.size()) {
             highlightSlot(itemSlotMapping.get(currentItem), e.gui);
         }
@@ -106,6 +111,7 @@ public class ContainerValue {
 
     @SubscribeEvent // Enable or disable the overlay when TAB key is pressed.
     public void onKeyboardInput(GuiScreenEvent.KeyboardInputEvent.Post e) {
+        if(!backgroundDrawnEventFiredOnce) return;
         if(!(e.gui instanceof GuiChest) || toRender.isEmpty()) return;
         if(Keyboard.getEventKey() != Keyboard.KEY_TAB || !Keyboard.isKeyDown(Keyboard.KEY_TAB)) return;
         if(Keyboard.getEventKeyState()) enabled = !enabled;
@@ -113,6 +119,7 @@ public class ContainerValue {
 
     @SubscribeEvent // On mouse input (cursor moved), calculate its position and which item the user is hovering over.
     public void onMouseInput(GuiScreenEvent.MouseInputEvent e) {
+        if(!backgroundDrawnEventFiredOnce) return;
         // Return if not enabled or no data.
         if(!enabled || !(e.gui instanceof GuiChest) || toRender.isEmpty()) { currentItem = -1; return; }
 
