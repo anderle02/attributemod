@@ -31,7 +31,7 @@ public class OneTimeMessage {
         final EntityPlayerSP player = (EntityPlayerSP) e.entity;
         this.sent = true;
 
-        Main.api.request("/onetimemessage", "", new PriceApi.ResponseCallback() {
+        Main.api.sendGetRequest("/onetimemessage", "", new PriceApi.ResponseCallback() {
             @Override
             public void onResponse(String a) {
                 JsonObject response = new JsonParser().parse(a).getAsJsonObject();

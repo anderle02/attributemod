@@ -132,7 +132,7 @@ public class ApCommand extends CommandBase {
             ChatUtils.badNumber(sender, 1, 10);
             return;
         }
-        Main.api.request("/attributeprice",
+        Main.api.sendGetRequest("/attributeprice",
             "&a1=" + Helper.urlEncodeAttribute(attribute) + "&l1=" + level + (appearance == null ? "" : "&appearance=" + appearance),
         new PriceApi.ResponseCallback() {
             @Override
@@ -164,7 +164,7 @@ public class ApCommand extends CommandBase {
             ChatUtils.badNumber(sender, 1, 10);
             return;
         }
-        Main.api.request("/attributeprice",
+        Main.api.sendGetRequest("/attributeprice",
         "&a1=" + Helper.urlEncodeAttribute(first) + "&l1=" + firstLevel
             + "&a2=" + Helper.urlEncodeAttribute(second) + "&l2=" + secondLevel
             + (appearance == null ? "" : "&appearance=" + appearance),

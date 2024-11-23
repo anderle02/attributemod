@@ -12,7 +12,10 @@ import javax.net.ssl.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 public class PriceApi {
     public static final String URL = "https://anderle.dev/api";
@@ -49,7 +52,7 @@ public class PriceApi {
     }
 
     public void refreshPrices() {
-        request("/evaluate", "", new ResponseCallback() {
+        sendGetRequest("/evaluate", "", new ResponseCallback() {
             @Override
             public void onResponse(String a) {
                 data = new JsonParser().parse(a).getAsJsonObject();
@@ -99,29 +102,72 @@ public class PriceApi {
         else return price.getAsInt();
     }
 
-    public void request(final String path, final String params, final ResponseCallback callback) {
-        final String key = Main.config.get().get("Main Settings", "key", "").getString();
-        final String uuid = Helper.getPlayerUUID(Minecraft.getMinecraft());
-
+    public void sendGetRequest(final String path, final String params, final ResponseCallback callback) {
         new Thread(() -> {
             try {
-                URL url = new URL(URL + path + "?key=" + key + "&uuid=" + uuid + "&version=" + Main.VERSION + params);
+                URL url = buildUrl(path, params);
                 HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+
                 con.setSSLSocketFactory(getAllowAllFactory());
                 con.setRequestMethod("GET");
                 con.setConnectTimeout(20000);
                 con.setReadTimeout(20000);
+
                 int status = con.getResponseCode();
                 if(status != 200) throw new HttpResponseException(status, con.getResponseMessage());
+
                 BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
                 String inputLine;
                 StringBuilder content = new StringBuilder();
                 while ((inputLine = in.readLine()) != null) content.append(inputLine);
                 in.close();
+
                 con.disconnect();
                 callback.onResponse(content.toString());
+
             } catch(IOException e) { callback.onError(e); }
         }).start();
+    }
+
+    public void sendPostRequest(final String path, final String params, final String body, final ResponseCallback callback) {
+        new Thread(() -> {
+            try {
+                URL url = buildUrl(path, params);
+                HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+
+                con.setSSLSocketFactory(getAllowAllFactory());
+                con.setRequestMethod("POST");
+                con.setDoOutput(true);  // To send data in the request body
+                con.setRequestProperty("Content-Type", "application/json");
+                con.setConnectTimeout(20000);
+                con.setReadTimeout(20000);
+
+                try (OutputStream os = con.getOutputStream()) {
+                    byte[] input = body.getBytes(StandardCharsets.UTF_8);
+                    os.write(input, 0, input.length);
+                }
+
+                int status = con.getResponseCode();
+                if(status != 200) throw new HttpResponseException(status, con.getResponseMessage());
+
+                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                String inputLine;
+                StringBuilder content = new StringBuilder();
+                while ((inputLine = in.readLine()) != null) content.append(inputLine);
+                in.close();
+
+                con.disconnect();
+                callback.onResponse(content.toString());
+
+            } catch(IOException e) { callback.onError(e); }
+        }).start();
+    }
+
+    public URL buildUrl(String path, String params) throws MalformedURLException {
+        String key = Main.config.get().get("Main Settings", "key", "").getString();
+        String uuid = Helper.getPlayerUUID(Minecraft.getMinecraft());
+
+        return new URL(URL + path + "?key=" + key + "&uuid=" + uuid + "&version=" + Main.VERSION + params);
     }
 
     public interface ResponseCallback {

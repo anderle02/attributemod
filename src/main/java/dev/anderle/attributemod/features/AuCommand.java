@@ -109,7 +109,7 @@ public class AuCommand extends CommandBase {
      */
     private void showResult(final ICommandSender sender, String attribute, String item, int from, int to) {
         final AuCommand self = this;
-        Main.api.request("/attributeupgrade",
+        Main.api.sendGetRequest("/attributeupgrade",
             "&attribute=" + Helper.urlEncodeAttribute(attribute)
             + "&item=" + item + "&from=" + from + "&to=" + to,
         new PriceApi.ResponseCallback() {
