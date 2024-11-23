@@ -54,9 +54,7 @@ public class Main {
         FMLCommonHandler.instance().bus().register(this);
 
         MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(new TooltipPriceDisplay());
-        MinecraftForge.EVENT_BUS.register(new OneTimeMessage());
-        MinecraftForge.EVENT_BUS.register(new ContainerValue());
+        MinecraftForge.EVENT_BUS.register(new Events());
         ClientCommandHandler.instance.registerCommand(new ApCommand());
         ClientCommandHandler.instance.registerCommand(new AuCommand());
         ClientCommandHandler.instance.registerCommand(new SettingsCommand());

@@ -8,9 +8,7 @@ import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.inventory.Slot;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -60,17 +58,16 @@ public class ContainerValue {
         this.enabled = getOverlayEnabledFromConfig();
     }
 
-    @SubscribeEvent // Reset when a new Gui was opened.
-    public void onGuiOpen(GuiOpenEvent e) {
+    // Reset when a new Gui was opened.
+    public void onGuiOpen() {
         backgroundDrawnEventFiredOnce = false;
         lastItemUpdate = 0;
         currentItem = -1;
     }
 
-    @SubscribeEvent // When Minecraft draws the background, render the overlay, so tooltips are displayed above.
+    // When Minecraft draws the background, render the overlay, so tooltips are displayed above.
     public void onDrawGuiBackground(GuiScreenEvent.BackgroundDrawnEvent e) {
         if(!enabled || Main.api.data == null) return; // don't show or update the overlay if there is no data or if disabled
-        if(!(e.gui instanceof GuiChest)) return; // skip if gui is not a chest
 
         backgroundDrawnEventFiredOnce = true;
 
@@ -102,7 +99,7 @@ public class ContainerValue {
         renderOverlay(((GuiChest) e.gui), toRender);
     }
 
-    @SubscribeEvent // When Minecraft draws the foreground, highlight the slot if the user is hovering over an item.
+    // When Minecraft draws the foreground, highlight the slot if the user is hovering over an item.
     public void onDrawGuiForeground(GuiScreenEvent.DrawScreenEvent e) {
         if(!backgroundDrawnEventFiredOnce) return;
         if(enabled && currentItem != -1 && currentItem < toRender.size()) {
@@ -110,19 +107,18 @@ public class ContainerValue {
         }
     }
 
-    @SubscribeEvent // Enable or disable the overlay when TAB key is pressed.
-    public void onKeyboardInput(GuiScreenEvent.KeyboardInputEvent.Post e) {
-        if(!backgroundDrawnEventFiredOnce) return;
-        if(!(e.gui instanceof GuiChest) || toRender.isEmpty()) return;
+    // Enable or disable the overlay when TAB key is pressed.
+    public void onKeyboardInput() {
+        if(!backgroundDrawnEventFiredOnce || toRender.isEmpty()) return;
         if(Keyboard.getEventKey() != Keyboard.KEY_TAB || !Keyboard.isKeyDown(Keyboard.KEY_TAB)) return;
         if(Keyboard.getEventKeyState()) toggleOverlay();
     }
 
-    @SubscribeEvent // On mouse input (cursor moved), calculate its position and which item the user is hovering over.
+    // On mouse input (cursor moved), calculate its position and which item the user is hovering over.
     public void onMouseInput(GuiScreenEvent.MouseInputEvent e) {
         if(!backgroundDrawnEventFiredOnce) return;
         // Return if not enabled or no data.
-        if(!enabled || !(e.gui instanceof GuiChest) || toRender.isEmpty()) { currentItem = -1; return; }
+        if(!enabled || toRender.isEmpty()) { currentItem = -1; return; }
 
         // Copy items to clipboard if button was clicked.
         if(focusedControlButton == ControlButton.CLIPBOARD && Mouse.isButtonDown(0)) {
@@ -350,7 +346,7 @@ public class ContainerValue {
     }
 
     private String highlightControlButton(String str) {
-        String toHighlight = "";
+        String toHighlight;
         switch(focusedControlButton) {
             case CLIPBOARD: toHighlight = "[Copy to Clipboard]"; break;
             case LARGER: toHighlight = "[+]"; break;

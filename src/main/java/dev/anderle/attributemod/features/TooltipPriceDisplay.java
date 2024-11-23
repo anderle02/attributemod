@@ -4,14 +4,12 @@ import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.ItemWithAttributes;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TooltipPriceDisplay {
 
-    @SubscribeEvent
     public void onRenderToolTip(ItemTooltipEvent e) {
         List<String> toolTip = new ArrayList<>(e.toolTip);
 

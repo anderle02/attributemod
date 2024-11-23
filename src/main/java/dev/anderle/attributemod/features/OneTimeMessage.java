@@ -14,7 +14,6 @@ import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.io.IOException;
 
@@ -26,7 +25,6 @@ public class OneTimeMessage {
 
     private boolean sent = false;
 
-    @SubscribeEvent
     public void onWorldJoin(EntityJoinWorldEvent e) {
         if(this.sent) return;
         if(!e.entity.equals(Minecraft.getMinecraft().thePlayer)) return;
