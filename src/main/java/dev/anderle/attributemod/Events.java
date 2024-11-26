@@ -4,6 +4,7 @@ import dev.anderle.attributemod.features.ContainerValue;
 import dev.anderle.attributemod.features.KuudraProfit;
 import dev.anderle.attributemod.features.OneTimeMessage;
 import dev.anderle.attributemod.features.TooltipPriceDisplay;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.inventory.ContainerChest;
 import net.minecraftforge.client.event.GuiOpenEvent;
@@ -31,18 +32,25 @@ public class Events {
             currentGuiIsChest = false;
         } else {
             currentGuiIsChest = true;
-            if(((ContainerChest) ((GuiChest) e.gui).inventorySlots)
-                    .getLowerChestInventory().getDisplayName().toString()
-                    .equals("Paid Chest")) currentGuiIsKuudraPaidChest = true;
+            currentGuiIsKuudraPaidChest = ((ContainerChest) ((GuiChest) e.gui).inventorySlots)
+                    .getLowerChestInventory().getDisplayName().getUnformattedText()
+                    .contains("(Slot #6)");
+
+            if(currentGuiIsKuudraPaidChest) {
+                kuudraProfit.onGuiOpen((ContainerChest) ((GuiChest) e.gui).inventorySlots);
+            } else {
+                containerValue.onGuiOpen();
+            }
+
+            System.out.println(((ContainerChest) ((GuiChest) e.gui).inventorySlots)
+                    .getLowerChestInventory().getDisplayName().getUnformattedText());
         }
-        if(currentGuiIsKuudraPaidChest) kuudraProfit.onGuiOpen(e);
-        else if(currentGuiIsChest) containerValue.onGuiOpen();
     }
 
     @SubscribeEvent
     public void onDrawGuiBackground(GuiScreenEvent.BackgroundDrawnEvent e) {
         if(currentGuiIsKuudraPaidChest) kuudraProfit.onDrawGuiBackground(e);
-        else containerValue.onDrawGuiBackground(e);
+        else if(currentGuiIsChest) containerValue.onDrawGuiBackground(e);
     }
 
     @SubscribeEvent
