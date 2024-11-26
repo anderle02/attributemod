@@ -1,6 +1,8 @@
 package dev.anderle.attributemod.utils;
 
+import com.google.gson.*;
 import net.minecraft.client.Minecraft;
+import net.minecraft.nbt.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 
@@ -83,5 +85,36 @@ public class Helper {
         return mc.thePlayer == null
                 ? mc.getSession().getPlayerID()
                 : mc.thePlayer.getUniqueID().toString().replaceAll("-", "");
+    }
+
+    public static JsonObject convertNBTToJson(NBTTagCompound nbtTag) {
+        JsonObject jsonObject = new JsonObject();
+
+        for (String key : nbtTag.getKeySet()) {
+            JsonElement jsonElement = convertTagToJsonElement(nbtTag.getTag(key));
+            jsonObject.add(key, jsonElement);
+        }
+
+        return jsonObject;
+    }
+
+    private static JsonElement convertTagToJsonElement(NBTBase nbtTag) {
+        if (nbtTag instanceof NBTTagCompound) {
+            return convertNBTToJson((NBTTagCompound) nbtTag);
+        } else if (nbtTag instanceof NBTTagList) {
+            JsonArray jsonArray = new JsonArray();
+            NBTTagList nbtList = (NBTTagList) nbtTag;
+            for (int i = 0; i < nbtList.tagCount(); i++) {
+                jsonArray.add(convertTagToJsonElement(nbtList.get(i)));
+            }
+            return jsonArray;
+        } else if (nbtTag instanceof NBTTagString) {
+            return new JsonPrimitive(((NBTTagString) nbtTag).getString());
+        } else if (nbtTag instanceof NBTTagInt) {
+            return new JsonPrimitive(((NBTTagInt) nbtTag).getInt());
+        } else {
+            // Handle other NBT types similarly
+            return JsonNull.INSTANCE;  // Default return for unsupported types
+        }
     }
 }

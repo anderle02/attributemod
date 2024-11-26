@@ -6,7 +6,6 @@ import dev.anderle.attributemod.utils.ItemWithAttributes;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.inventory.Slot;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import org.lwjgl.input.Keyboard;
@@ -73,7 +72,7 @@ public class ContainerValue {
 
         if(System.currentTimeMillis() - UPDATE_INTERVAL > lastItemUpdate) {
             List<Slot> allSlots = ((GuiChest) e.gui).inventorySlots.inventorySlots;
-            ItemWithAttributes[] items = getValidItems(allSlots.subList(0, allSlots.size() - 36));
+            ItemWithAttributes[] items = ItemWithAttributes.getValidItems(allSlots.subList(0, allSlots.size() - 36));
 
             itemSlotMapping.clear();
             for(int i = 0; i < items.length; i++) itemSlotMapping.put(i, items[i].getSlot());
@@ -172,30 +171,6 @@ public class ContainerValue {
             lastMousePos = null;
             moved = false;
         }
-    }
-
-    private ItemWithAttributes[] getValidItems(List<Slot> slotsToCheck) {
-        List<ItemWithAttributes> items = new ArrayList<>();
-
-        for(Slot slot : slotsToCheck) {
-            if(!slot.getHasStack()) continue;
-            NBTTagCompound extra = slot.getStack().serializeNBT()
-                    .getCompoundTag("tag").getCompoundTag("ExtraAttributes");
-            NBTTagCompound attributeCompound = extra.getCompoundTag("attributes");
-            String itemId = extra.getString("id");
-
-            if(itemId == null || attributeCompound.getKeySet().isEmpty()) continue;
-            else itemId = Helper.removeExtraItemIdParts(itemId);
-
-            ItemWithAttributes item = new ItemWithAttributes(itemId, slot);
-            for(String attribute : attributeCompound.getKeySet()) {
-                item.addAttribute(Helper.formatAttribute(attribute), attributeCompound.getInteger(attribute));
-            }
-            items.add(item);
-        }
-
-        items.sort(Comparator.comparingInt(i -> - i.getDetailedPrice().getEstimate()));
-        return items.toArray(new ItemWithAttributes[0]);
     }
 
     private ArrayList<String> getOverlay(ItemWithAttributes[] items) {

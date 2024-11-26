@@ -1,12 +1,16 @@
 package dev.anderle.attributemod.utils;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
 import dev.anderle.attributemod.Main;
 import net.minecraft.inventory.Slot;
+import net.minecraft.nbt.*;
+import net.minecraft.util.JsonUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.ByteArrayOutputStream;
+import java.util.*;
 
 public class ItemWithAttributes {
     private final HashMap<String, Integer> attributes = new HashMap<>();
@@ -31,6 +35,11 @@ public class ItemWithAttributes {
 
     public Integer[] getAttributeLevels() {
         return attributes.values().toArray(new Integer[0]);
+    }
+
+    public JsonObject getNBTAsJson() {
+        NBTTagCompound compound = slot.getStack().writeToNBT(new NBTTagCompound());
+        return Helper.convertNBTToJson(compound);
     }
 
     public Evaluation getDetailedPrice() {
@@ -102,5 +111,29 @@ public class ItemWithAttributes {
         public int getEstimate() {
             return estimate;
         }
+    }
+
+    public static ItemWithAttributes[] getValidItems(List<Slot> slotsToCheck) {
+        List<ItemWithAttributes> items = new ArrayList<>();
+
+        for(Slot slot : slotsToCheck) {
+            if(!slot.getHasStack()) continue;
+            NBTTagCompound extra = slot.getStack().serializeNBT()
+                    .getCompoundTag("tag").getCompoundTag("ExtraAttributes");
+            NBTTagCompound attributeCompound = extra.getCompoundTag("attributes");
+            String itemId = extra.getString("id");
+
+            if(itemId == null || attributeCompound.getKeySet().isEmpty()) continue;
+            else itemId = Helper.removeExtraItemIdParts(itemId);
+
+            ItemWithAttributes item = new ItemWithAttributes(itemId, slot);
+            for(String attribute : attributeCompound.getKeySet()) {
+                item.addAttribute(Helper.formatAttribute(attribute), attributeCompound.getInteger(attribute));
+            }
+            items.add(item);
+        }
+
+        items.sort(Comparator.comparingInt(i -> - i.getDetailedPrice().getEstimate()));
+        return items.toArray(new ItemWithAttributes[0]);
     }
 }
