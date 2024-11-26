@@ -49,7 +49,7 @@ public class Events {
 
     @SubscribeEvent
     public void onDrawGuiBackground(GuiScreenEvent.BackgroundDrawnEvent e) {
-        if(currentGuiIsKuudraPaidChest) kuudraProfit.onDrawGuiBackground(e);
+        if(currentGuiIsKuudraPaidChest) kuudraProfit.onDrawGuiBackground((ContainerChest) ((GuiChest) e.gui).inventorySlots);
         else if(currentGuiIsChest) containerValue.onDrawGuiBackground(e);
     }
 
