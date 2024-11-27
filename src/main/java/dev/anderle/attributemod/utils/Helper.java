@@ -81,12 +81,18 @@ public class Helper {
         return itemId;
     }
 
+    /**
+     *  Get player UUID dynamically.
+     */
     public static String getPlayerUUID(Minecraft mc) {
         return mc.thePlayer == null
                 ? mc.getSession().getPlayerID()
                 : mc.thePlayer.getUniqueID().toString().replaceAll("-", "");
     }
 
+    /**
+     * Convert NBT tag to JSON format.
+     */
     public static JsonObject convertNBTToJson(NBTTagCompound nbtTag) {
         JsonObject jsonObject = new JsonObject();
 
@@ -98,6 +104,9 @@ public class Helper {
         return jsonObject;
     }
 
+    /**
+     * Convert NBT tag to JSON format.
+     */
     private static JsonElement convertTagToJsonElement(NBTBase nbtTag) {
         if (nbtTag instanceof NBTTagCompound) {
             return convertNBTToJson((NBTTagCompound) nbtTag);
@@ -116,5 +125,17 @@ public class Helper {
             // Handle other NBT types similarly
             return JsonNull.INSTANCE;  // Default return for unsupported types
         }
+    }
+
+    /**
+     * Get Hypixel's item ID from the NBT tag.
+     */
+    public static String getHypixelId(JsonObject nbt) {
+        if(!nbt.has("tag")) return "NO_ID";
+        JsonObject tag = nbt.getAsJsonObject("tag");
+        if(!tag.has("ExtraAttributes")) return "NO_ID";
+        JsonObject extra = tag.getAsJsonObject("ExtraAttributes");
+        if(!extra.has("id")) return "NO_ID";
+        return extra.getAsJsonPrimitive("id").getAsString();
     }
 }

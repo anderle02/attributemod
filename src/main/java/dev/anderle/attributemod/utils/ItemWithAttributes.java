@@ -37,11 +37,6 @@ public class ItemWithAttributes {
         return attributes.values().toArray(new Integer[0]);
     }
 
-    public JsonObject getNBTAsJson() {
-        NBTTagCompound compound = slot.getStack().writeToNBT(new NBTTagCompound());
-        return Helper.convertNBTToJson(compound);
-    }
-
     public Evaluation getDetailedPrice() {
         if(price != null) return price; // so it doesn't calculate more than 1 time
 
