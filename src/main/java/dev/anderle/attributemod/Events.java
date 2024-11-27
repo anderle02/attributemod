@@ -21,51 +21,46 @@ public class Events {
     TooltipPriceDisplay tooltipPriceDisplay = new TooltipPriceDisplay();
 
     // Helper variables.
-    private boolean currentGuiIsChest = false;
     private boolean currentGuiIsKuudraPaidChest = false;
 
     @SubscribeEvent
     public void onGuiOpen(GuiOpenEvent e) {
-        if(!(e.gui instanceof GuiChest)) {
-            currentGuiIsChest = false;
-        } else if(!(((GuiChest) e.gui).inventorySlots instanceof ContainerChest)) {
-            currentGuiIsChest = false;
-        } else {
-            currentGuiIsChest = true;
-            currentGuiIsKuudraPaidChest = ((ContainerChest) ((GuiChest) e.gui).inventorySlots)
-                    .getLowerChestInventory().getDisplayName().getUnformattedText()
-                    .contains("(Slot #6)");
-
-            if(currentGuiIsKuudraPaidChest) {
-                kuudraProfit.onGuiOpen((ContainerChest) ((GuiChest) e.gui).inventorySlots);
-            } else {
-                containerValue.onGuiOpen();
-            }
-
-            System.out.println(((ContainerChest) ((GuiChest) e.gui).inventorySlots)
-                    .getLowerChestInventory().getDisplayName().getUnformattedText());
+        if(!(e.gui instanceof GuiChest) || !(((GuiChest) e.gui).inventorySlots instanceof ContainerChest)) {
+            currentGuiIsKuudraPaidChest = false;
+            return;
         }
+
+        currentGuiIsKuudraPaidChest = ((ContainerChest) ((GuiChest) e.gui).inventorySlots)
+                .getLowerChestInventory().getDisplayName().getUnformattedText()
+                .contains("(Slot #6)"); // Paid Chest
+
+        if(currentGuiIsKuudraPaidChest) kuudraProfit.onGuiOpen((ContainerChest) ((GuiChest) e.gui).inventorySlots);
+        else containerValue.onGuiOpen();
     }
 
     @SubscribeEvent
     public void onDrawGuiBackground(GuiScreenEvent.BackgroundDrawnEvent e) {
+        if(!(e.gui instanceof GuiChest) || !(((GuiChest) e.gui).inventorySlots instanceof ContainerChest)) return;
         if(currentGuiIsKuudraPaidChest) kuudraProfit.onDrawGuiBackground((ContainerChest) ((GuiChest) e.gui).inventorySlots);
-        else if(currentGuiIsChest) containerValue.onDrawGuiBackground(e);
+        else containerValue.onDrawGuiBackground(e);
     }
 
     @SubscribeEvent
     public void onDrawGuiForeground(GuiScreenEvent.DrawScreenEvent e) {
-        if(currentGuiIsChest && !currentGuiIsKuudraPaidChest) containerValue.onDrawGuiForeground(e);
+        if(!(e.gui instanceof GuiChest) || !(((GuiChest) e.gui).inventorySlots instanceof ContainerChest)) return;
+        if(!currentGuiIsKuudraPaidChest) containerValue.onDrawGuiForeground(e);
     }
 
     @SubscribeEvent
     public void onKeyboardInput(GuiScreenEvent.KeyboardInputEvent.Post e) {
-        if(currentGuiIsChest && !currentGuiIsKuudraPaidChest) containerValue.onKeyboardInput();
+        if(!(e.gui instanceof GuiChest) || !(((GuiChest) e.gui).inventorySlots instanceof ContainerChest)) return;
+        if(!currentGuiIsKuudraPaidChest) containerValue.onKeyboardInput();
     }
 
     @SubscribeEvent
     public void onMouseInput(GuiScreenEvent.MouseInputEvent e) {
-        if(currentGuiIsChest && !currentGuiIsKuudraPaidChest) containerValue.onMouseInput(e);
+        if(!(e.gui instanceof GuiChest) || !(((GuiChest) e.gui).inventorySlots instanceof ContainerChest)) return;
+        if(!currentGuiIsKuudraPaidChest) containerValue.onMouseInput(e);
     }
 
     @SubscribeEvent
