@@ -17,7 +17,7 @@ public class Events {
     // Classes that need events are initialized here, to avoid duplicate event handlers.
     ContainerValue containerValue = new ContainerValue();
     OneTimeMessage oneTimeMessage = new OneTimeMessage();
-    KuudraProfit kuudraProfit = new KuudraProfit();
+    KuudraProfit kuudraProfit = new KuudraProfit(containerValue);
     TooltipPriceDisplay tooltipPriceDisplay = new TooltipPriceDisplay();
 
     // Helper variables.
@@ -32,7 +32,7 @@ public class Events {
 
         currentGuiIsKuudraPaidChest = ((ContainerChest) ((GuiChest) e.gui).inventorySlots)
                 .getLowerChestInventory().getDisplayName().getUnformattedText()
-                .contains("(Slot #6)"); // Paid Chest
+                .contains("Paid Chest");
 
         if(currentGuiIsKuudraPaidChest) kuudraProfit.onGuiOpen((ContainerChest) ((GuiChest) e.gui).inventorySlots);
         else containerValue.onGuiOpen();
@@ -41,7 +41,7 @@ public class Events {
     @SubscribeEvent
     public void onDrawGuiBackground(GuiScreenEvent.BackgroundDrawnEvent e) {
         if(!(e.gui instanceof GuiChest) || !(((GuiChest) e.gui).inventorySlots instanceof ContainerChest)) return;
-        if(currentGuiIsKuudraPaidChest) kuudraProfit.onDrawGuiBackground((ContainerChest) ((GuiChest) e.gui).inventorySlots);
+        if(currentGuiIsKuudraPaidChest) kuudraProfit.onDrawGuiBackground((GuiChest) e.gui);
         else containerValue.onDrawGuiBackground(e);
     }
 
