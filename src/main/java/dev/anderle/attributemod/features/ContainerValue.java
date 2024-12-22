@@ -66,9 +66,8 @@ public class ContainerValue {
 
     // When Minecraft draws the background, render the overlay, so tooltips are displayed above.
     public void onDrawGuiBackground(GuiScreenEvent.BackgroundDrawnEvent e) {
-        if(!enabled || Main.api.data == null) return; // don't show or update the overlay if there is no data or if disabled
-
         backgroundDrawnEventFiredOnce = true;
+        if(!enabled || Main.api.data == null) return; // don't show or update the overlay if there is no data or if disabled
 
         if(System.currentTimeMillis() - UPDATE_INTERVAL > lastItemUpdate) {
             List<Slot> allSlots = ((GuiChest) e.gui).inventorySlots.inventorySlots;
@@ -108,7 +107,7 @@ public class ContainerValue {
 
     // Enable or disable the overlay when TAB key is pressed.
     public void onKeyboardInput() {
-        if(!backgroundDrawnEventFiredOnce || toRender.isEmpty()) return;
+        if(!backgroundDrawnEventFiredOnce) return;
         if(Keyboard.getEventKey() != Keyboard.KEY_TAB || !Keyboard.isKeyDown(Keyboard.KEY_TAB)) return;
         if(Keyboard.getEventKeyState()) toggleOverlay();
     }
@@ -336,6 +335,18 @@ public class ContainerValue {
                 Main.config.get().get("Main Settings", "overlayX", "0").getInt(),
                 Main.config.get().get("Main Settings", "overlayY", "0").getInt()
         );
+    }
+
+    public double getOverlayScale() {
+        return overlayScale;
+    }
+
+    public Point getOverlayPos() {
+        return overlayPos;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 
     enum ControlButton {
