@@ -34,6 +34,20 @@ The overlay can be disabled with the `Tab` key and moved by holding your **middl
 NEW: **Copy to Clipboard** button and total value display!
 
 ![](https://github.com/anderle02/attributemod/blob/master/images/chest_overlay.gif)
+
+### Kuudra Profit Display
+This overlay appears when you open a Kuudra reward chest.
+- lists items in the chest and their value
+- shows Kismet Feather and Kuudra Key prices
+- **tells you if it's worth to reroll / claim a chest**
+
+![](https://i.anderle.dev/pXsJFcIWJB.png)
+![](https://i.anderle.dev/5261LwzP04.png)
+
+## Planned Features
+- `/kuudra` command that shows kuudra stats and items of a player
+- party finder viewer for `/kuudra`
+- a GUI: with more and more features being added it can get confusing without a place for all settings
 ## Security Note
 This is the **only** way to download the Attribute Mod. It's hosted nowhere else than [here](https://github.com/anderle02/attributemod/releases/latest). Anyone trying to send you this mod **is trying to steal your account**, especially if it's "free".
 ## Join Kuudra Gang!
