@@ -60,7 +60,7 @@ public class KuudraProfit {
         Main.api.sendPostRequest("/kuudrachest", "&tier=" + getKuudraTier(), chestItems.toString(), new PriceApi.ResponseCallback() {
             @Override
             public void onResponse(String a) {
-                for(JsonElement line : new JsonParser().parse(a).getAsJsonArray()) {
+                for(JsonElement line : new JsonParser().parse(a.replaceAll("§", "\u00a7")).getAsJsonArray()) {
                     toRender.add(line.getAsString());
                 }
             }
