@@ -116,7 +116,7 @@ public class PriceApi {
                 int status = con.getResponseCode();
                 if(status != 200) throw new HttpResponseException(status, con.getResponseMessage());
 
-                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
                 String inputLine;
                 StringBuilder content = new StringBuilder();
                 while ((inputLine = in.readLine()) != null) content.append(inputLine);
@@ -150,7 +150,7 @@ public class PriceApi {
                 int status = con.getResponseCode();
                 if(status != 200) throw new HttpResponseException(status, con.getResponseMessage());
 
-                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
                 String inputLine;
                 StringBuilder content = new StringBuilder();
                 while ((inputLine = in.readLine()) != null) content.append(inputLine);
