@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <!-- Filter out Hypixel scoreboard and sound errors -->
+    <RegexFilter regex="Error executing task.*|Unable to play unknown soundEvent.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+    <!-- Filter out launchwrapper error spamming the logs on launch -->
+    <RegexFilter regex="The jar file .+ has a security seal for path org.lwjgl.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+</Configuration>
