@@ -12,6 +12,7 @@ import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 public class Events {
     // Classes that need events are initialized here, to avoid duplicate event handlers.
@@ -21,6 +22,7 @@ public class Events {
     TooltipPriceDisplay tooltipPriceDisplay = new TooltipPriceDisplay();
 
     // Helper variables.
+    public static boolean showVigilanceGuiWithNextTick = false;
     private boolean currentGuiIsKuudraPaidChest = false;
 
     @SubscribeEvent
@@ -71,5 +73,18 @@ public class Events {
     @SubscribeEvent
     public void onRenderToolTip(ItemTooltipEvent e) {
         tooltipPriceDisplay.onRenderToolTip(e);
+    }
+
+    @SubscribeEvent
+    public void tick(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            return;
+        }
+        // This is needed to open the vigilance config gui with next tick, after running the settings command.
+        // Minecraft closes the ChatGui after opening the config gui, closing the config gui too (we love Minecraft).
+        if (showVigilanceGuiWithNextTick) {
+            showVigilanceGuiWithNextTick = false;
+            AttributeMod.mc.displayGuiScreen(AttributeMod.config.gui());
+        }
     }
 }

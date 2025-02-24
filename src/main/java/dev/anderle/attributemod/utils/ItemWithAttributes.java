@@ -1,15 +1,9 @@
 package dev.anderle.attributemod.utils;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
-import dev.anderle.attributemod.Main;
+import dev.anderle.attributemod.AttributeMod;
 import net.minecraft.inventory.Slot;
 import net.minecraft.nbt.*;
-import net.minecraft.util.JsonUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.util.*;
 
 public class ItemWithAttributes {
@@ -41,12 +35,12 @@ public class ItemWithAttributes {
         if(price != null) return price; // so it doesn't calculate more than 1 time
 
         // lbin
-        int lbin = Main.api.getLbin(id);
+        int lbin = AttributeMod.backend.getLbin(id);
 
         // single
         HashMap<String, Integer> singlePricesMap = new HashMap<>();
         int[] singlePricesArray = attributes.entrySet().stream().map(attribute -> {
-            int price = (int) Math.pow(2, attribute.getValue() - 1) * Main.api.getAttributePrice(id, attribute.getKey());
+            int price = (int) Math.pow(2, attribute.getValue() - 1) * AttributeMod.backend.getAttributePrice(id, attribute.getKey());
             singlePricesMap.put(attribute.getKey(), price);
             return price;
         }).mapToInt(Integer::intValue).toArray();
@@ -65,7 +59,7 @@ public class ItemWithAttributes {
 
         // combination
         String[] attributeNames = getAttributeNames();
-        int combinationPrice = Main.api.getCombinationPrice(id, attributeNames[0], attributeNames[1]);
+        int combinationPrice = AttributeMod.backend.getCombinationPrice(id, attributeNames[0], attributeNames[1]);
 
         // estimate
         int estimate = singlePrice + combinationPrice;

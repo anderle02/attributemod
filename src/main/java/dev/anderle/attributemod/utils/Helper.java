@@ -1,6 +1,7 @@
 package dev.anderle.attributemod.utils;
 
 import com.google.gson.*;
+import dev.anderle.attributemod.AttributeMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.*;
 import org.apache.commons.lang3.StringUtils;
@@ -84,10 +85,10 @@ public class Helper {
     /**
      *  Get player UUID dynamically.
      */
-    public static String getPlayerUUID(Minecraft mc) {
-        return mc.thePlayer == null
-                ? mc.getSession().getPlayerID()
-                : mc.thePlayer.getUniqueID().toString().replaceAll("-", "");
+    public static String getPlayerUUID() {
+        return AttributeMod.mc.thePlayer == null
+                ? AttributeMod.mc.getSession().getPlayerID()
+                : AttributeMod.mc.thePlayer.getUniqueID().toString().replaceAll("-", "");
     }
 
     /**

@@ -2,8 +2,8 @@ package dev.anderle.attributemod.features;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import dev.anderle.attributemod.Main;
-import dev.anderle.attributemod.api.PriceApi;
+import dev.anderle.attributemod.AttributeMod;
+import dev.anderle.attributemod.api.Backend;
 import dev.anderle.attributemod.utils.ChatUtils;
 import dev.anderle.attributemod.utils.Constants;
 import net.minecraft.client.Minecraft;
@@ -31,7 +31,7 @@ public class OneTimeMessage {
         final EntityPlayerSP player = (EntityPlayerSP) e.entity;
         this.sent = true;
 
-        Main.api.sendGetRequest("/onetimemessage", "", new PriceApi.ResponseCallback() {
+        AttributeMod.backend.sendGetRequest("/onetimemessage", "", new Backend.ResponseCallback() {
             @Override
             public void onResponse(String a) {
                 JsonObject response = new JsonParser().parse(a).getAsJsonObject();
@@ -40,7 +40,7 @@ public class OneTimeMessage {
                 String downloadLink = response.get("download").getAsString();
 
                 if(isWhitelisted) {
-                    if(latestVersion.equals(Main.VERSION)) return;
+                    if(latestVersion.equals(AttributeMod.VERSION)) return;
                     try {
                         player.addChatMessage(getUpdateAvailableMessage(latestVersion, downloadLink));
                     } catch (IOException e) {
@@ -60,7 +60,7 @@ public class OneTimeMessage {
         return new ChatComponentText(
         Constants.prefix + EnumChatFormatting.YELLOW + "New Update Available!\n" +
             Constants.prefix + EnumChatFormatting.YELLOW + "Current: " +
-                EnumChatFormatting.AQUA + Main.VERSION + EnumChatFormatting.YELLOW +
+                EnumChatFormatting.AQUA + AttributeMod.VERSION + EnumChatFormatting.YELLOW +
                 ", Latest: " + EnumChatFormatting.AQUA + newVersion + EnumChatFormatting.YELLOW +
                 ".\n\n" +
             Constants.prefix + EnumChatFormatting.GREEN + "[ ")
@@ -69,7 +69,7 @@ public class OneTimeMessage {
         .appendSibling(new ChatComponentText(
         "Open Mod Folder").setChatStyle(new ChatStyle()
             .setChatClickEvent(new ClickEvent(
-                    ClickEvent.Action.OPEN_FILE, Main.modFolder.getCanonicalPath()
+                    ClickEvent.Action.OPEN_FILE, AttributeMod.modFolder.getCanonicalPath()
             )).setUnderlined(true).setColor(EnumChatFormatting.BLUE)))
         .appendSibling(new ChatComponentText(EnumChatFormatting.BLUE + " ]"));
     }

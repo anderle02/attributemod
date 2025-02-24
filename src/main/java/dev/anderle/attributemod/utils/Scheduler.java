@@ -1,6 +1,6 @@
 package dev.anderle.attributemod.utils;
 
-import dev.anderle.attributemod.Main;
+import dev.anderle.attributemod.AttributeMod;
 import org.apache.logging.log4j.Level;
 
 import java.io.IOException;
@@ -17,7 +17,7 @@ public class Scheduler {
     public void registerTasks() {
         this.tasks.put("ah", new Task("ah", 60000, new Callable<Void>() {
             public Void call() throws IOException {
-                Main.api.refreshPrices();
+                AttributeMod.backend.refreshPrices();
                 return null;
             }
         }));
@@ -26,7 +26,7 @@ public class Scheduler {
     public void startExecutingTasks(String ...names) {
         for(String name : names) {
             if(!tasks.containsKey(name)) {
-                Main.LOGGER.error("Can't start task '" + name + "' because it was never registered.");
+                AttributeMod.LOGGER.error("Can't start task '" + name + "' because it was never registered.");
                 continue;
             }
             final Task task = tasks.get(name);
@@ -39,7 +39,7 @@ public class Scheduler {
                             try {
                                 Thread.sleep(100);
                             } catch (InterruptedException e) {
-                                Main.LOGGER.log(Level.DEBUG, e.getMessage());
+                                AttributeMod.LOGGER.log(Level.DEBUG, e.getMessage());
                             }
                         }
                     }

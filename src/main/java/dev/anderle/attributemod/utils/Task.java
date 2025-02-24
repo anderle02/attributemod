@@ -1,6 +1,6 @@
 package dev.anderle.attributemod.utils;
 
-import dev.anderle.attributemod.Main;
+import dev.anderle.attributemod.AttributeMod;
 
 import java.util.concurrent.Callable;
 
@@ -20,7 +20,7 @@ public class Task {
             this.active = true;
             this.function.call();
         } catch (Exception e) {
-            Main.LOGGER.error("Failed to execute task '" + this.name + "' due to the following error: " + e.getMessage());
+            AttributeMod.LOGGER.error("Failed to execute task '" + this.name + "' due to the following error: " + e.getMessage());
         } finally {
             this.active = false;
         }

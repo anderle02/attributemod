@@ -2,8 +2,8 @@ package dev.anderle.attributemod.features;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import dev.anderle.attributemod.Main;
-import dev.anderle.attributemod.api.PriceApi;
+import dev.anderle.attributemod.AttributeMod;
+import dev.anderle.attributemod.api.Backend;
 import dev.anderle.attributemod.utils.Constants;
 import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.ChatUtils;
@@ -109,10 +109,10 @@ public class AuCommand extends CommandBase {
      */
     private void showResult(final ICommandSender sender, String attribute, String item, int from, int to) {
         final AuCommand self = this;
-        Main.api.sendGetRequest("/attributeupgrade",
+        AttributeMod.backend.sendGetRequest("/attributeupgrade",
             "&attribute=" + Helper.urlEncodeAttribute(attribute)
             + "&item=" + item + "&from=" + from + "&to=" + to,
-        new PriceApi.ResponseCallback() {
+        new Backend.ResponseCallback() {
             @Override
             public void onResponse(String a) {
                 JsonObject response = new JsonParser().parse(a).getAsJsonObject();

@@ -1,6 +1,6 @@
 package dev.anderle.attributemod.features;
 
-import dev.anderle.attributemod.Main;
+import dev.anderle.attributemod.AttributeMod;
 import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.ItemWithAttributes;
 import net.minecraft.client.gui.GuiScreen;
@@ -67,7 +67,7 @@ public class ContainerValue {
     // When Minecraft draws the background, render the overlay, so tooltips are displayed above.
     public void onDrawGuiBackground(GuiScreenEvent.BackgroundDrawnEvent e) {
         backgroundDrawnEventFiredOnce = true;
-        if(!enabled || Main.api.data == null) return; // don't show or update the overlay if there is no data or if disabled
+        if(!enabled || AttributeMod.backend.data == null) return; // don't show or update the overlay if there is no data or if disabled
 
         if(System.currentTimeMillis() - UPDATE_INTERVAL > lastItemUpdate) {
             List<Slot> allSlots = ((GuiChest) e.gui).inventorySlots.inventorySlots;
@@ -195,8 +195,8 @@ public class ContainerValue {
     }
 
     private void savePosToConfig() {
-        Main.config.set("overlayX", Integer.toString(overlayPos.x), "0");
-        Main.config.set("overlayY", Integer.toString(overlayPos.y), "0");
+        //AttributeMod.config.set("overlayX", Integer.toString(overlayPos.x), "0");
+        //AttributeMod.config.set("overlayY", Integer.toString(overlayPos.y), "0");
     }
 
     private void changeOverlayScale(boolean smaller) {
@@ -205,20 +205,20 @@ public class ContainerValue {
         if(overlayScale < 0.25) overlayScale = 0.25;
         if(overlayScale > 2.5) overlayScale = 2.5;
 
-        Main.config.set("overlayScale", Double.toString(overlayScale), "1.0");
+        //AttributeMod.config.set("overlayScale", Double.toString(overlayScale), "1.0");
     }
 
     private double getOverlayScaleFromConfig() {
-        return Main.config.get().get("Main Settings", "overlayScale", "1.0").getDouble();
+        return 1.0;//AttributeMod.config.get().get("Main Settings", "overlayScale", "1.0").getDouble();
     }
 
     private void toggleOverlay() {
         enabled = !enabled;
-        Main.config.set("overlayEnabled", Boolean.toString(enabled), "true");
+        //AttributeMod.config.set("overlayEnabled", Boolean.toString(enabled), "true");
     }
 
     private boolean getOverlayEnabledFromConfig() {
-        return Main.config.get().get("Main Settings", "overlayEnabled", "true").getBoolean();
+        return true;//AttributeMod.config.get().get("Main Settings", "overlayEnabled", "true").getBoolean();
     }
 
     private void copyToClipboard() {
@@ -331,9 +331,9 @@ public class ContainerValue {
     }
 
     private Point getPositionFromConfig() {
-        return new Point(
-                Main.config.get().get("Main Settings", "overlayX", "0").getInt(),
-                Main.config.get().get("Main Settings", "overlayY", "0").getInt()
+        return new Point(0,0
+                //AttributeMod.config.get().get("Main Settings", "overlayX", "0").getInt(),
+                //AttributeMod.config.get().get("Main Settings", "overlayY", "0").getInt()
         );
     }
 

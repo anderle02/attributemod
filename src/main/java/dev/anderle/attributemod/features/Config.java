@@ -1,29 +1,35 @@
 package dev.anderle.attributemod.features;
 
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
+import dev.anderle.attributemod.AttributeMod;
+import gg.essential.elementa.ElementaVersion;
+import gg.essential.elementa.WindowScreen;
+import gg.essential.vigilance.Vigilant;
+import gg.essential.vigilance.data.Property;
+import gg.essential.vigilance.data.PropertyType;
 
 import java.io.File;
 
-public class Config {
-    private final Configuration config;
+public class Config extends Vigilant {
 
-    public Config(File configFile) {
-        this.config = new Configuration(configFile);
-        this.config.addCustomCategoryComment(
-            "Main Settings",
-            "If you don't exactly know what you're doing, please don't edit this manually.");
-        this.config.load();
+    public Config() {
+        super(new File("./config/attributemod.toml"), AttributeMod.NAME);
+        initialize();
     }
 
-    public Configuration get() {
-        return this.config;
-    }
+    @Property(
+            type = PropertyType.SWITCH,
+            name = "Chest Overlay",
+            description = "Show an overlay for inventories that contain items with attributes.",
+            category = "Main Settings"
+    )
+    public boolean overlayEnabled = true;
 
-    public void set(String key, String value, String defaultValue) {
-        Property p = config.get("Main Settings", key, defaultValue);
-        p.set(value);
-        this.config.save();
-        this.config.load();
-    }
+    @Property(
+            type = PropertyType.TEXT,
+            name = "Mod Key",
+            description = "This mod requires an active subscription to work. To get your key,\n- join https://discord.gg/kuudra\n- run /mod in #commands\n- enter your key here",
+            category = "Main Settings",
+            protectedText = true
+    )
+    public String modkey = "";
 }

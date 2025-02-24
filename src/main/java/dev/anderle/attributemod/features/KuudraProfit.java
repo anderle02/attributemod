@@ -1,8 +1,8 @@
 package dev.anderle.attributemod.features;
 
 import com.google.gson.*;
-import dev.anderle.attributemod.Main;
-import dev.anderle.attributemod.api.PriceApi;
+import dev.anderle.attributemod.AttributeMod;
+import dev.anderle.attributemod.api.Backend;
 import dev.anderle.attributemod.utils.Helper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiChest;
@@ -57,7 +57,7 @@ public class KuudraProfit {
             chestItems.add(nbt);
         }
 
-        Main.api.sendPostRequest("/kuudrachest", "&tier=" + getKuudraTier(), chestItems.toString(), new PriceApi.ResponseCallback() {
+        AttributeMod.backend.sendPostRequest("/kuudrachest", "&tier=" + getKuudraTier(), chestItems.toString(), new Backend.ResponseCallback() {
             @Override
             public void onResponse(String a) {
                 for(JsonElement line : new JsonParser().parse(a.replaceAll("§", "\u00a7")).getAsJsonArray()) {

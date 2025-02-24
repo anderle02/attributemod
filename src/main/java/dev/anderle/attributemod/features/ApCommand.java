@@ -4,8 +4,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.anderle.attributemod.utils.Constants;
-import dev.anderle.attributemod.Main;
-import dev.anderle.attributemod.api.PriceApi;
+import dev.anderle.attributemod.AttributeMod;
+import dev.anderle.attributemod.api.Backend;
 import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.ChatUtils;
 import net.minecraft.client.Minecraft;
@@ -132,9 +132,9 @@ public class ApCommand extends CommandBase {
             ChatUtils.badNumber(sender, 1, 10);
             return;
         }
-        Main.api.sendGetRequest("/attributeprice",
+        AttributeMod.backend.sendGetRequest("/attributeprice",
             "&a1=" + Helper.urlEncodeAttribute(attribute) + "&l1=" + level + (appearance == null ? "" : "&appearance=" + appearance),
-        new PriceApi.ResponseCallback() {
+        new Backend.ResponseCallback() {
             @Override
             public void onResponse(String a) {
                 decodeResponseAndSendText(
@@ -164,11 +164,11 @@ public class ApCommand extends CommandBase {
             ChatUtils.badNumber(sender, 1, 10);
             return;
         }
-        Main.api.sendGetRequest("/attributeprice",
+        AttributeMod.backend.sendGetRequest("/attributeprice",
         "&a1=" + Helper.urlEncodeAttribute(first) + "&l1=" + firstLevel
             + "&a2=" + Helper.urlEncodeAttribute(second) + "&l2=" + secondLevel
             + (appearance == null ? "" : "&appearance=" + appearance),
-        new PriceApi.ResponseCallback() {
+        new Backend.ResponseCallback() {
             @Override
             public void onResponse(String a) {
                 decodeResponseAndSendText(
