@@ -2,6 +2,7 @@ package dev.anderle.attributemod;
 
 import dev.anderle.attributemod.api.Backend;
 import dev.anderle.attributemod.features.*;
+import dev.anderle.attributemod.overlay.OverlayElement;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
@@ -13,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.util.Arrays;
 
 @Mod(modid = "attributemod", useMetadata = true, clientSideOnly = true)
 public class AttributeMod {
@@ -37,12 +39,16 @@ public class AttributeMod {
         config = new Config();
         mc = Minecraft.getMinecraft();
 
-        MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(new Events());
 
-        ClientCommandHandler.instance.registerCommand(new ApCommand());
-        ClientCommandHandler.instance.registerCommand(new AuCommand());
-        ClientCommandHandler.instance.registerCommand(new SettingsCommand());
+        Arrays.asList(
+                new ApCommand(),
+                new AuCommand(),
+                new SettingsCommand()
+        ).forEach(ClientCommandHandler.instance::registerCommand);
+
+        Events.initializeFeatures();
+        OverlayElement.initAll();
 
         //scheduler.registerTasks();
         //scheduler.startExecutingTasks("ah");

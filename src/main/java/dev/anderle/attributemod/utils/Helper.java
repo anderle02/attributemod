@@ -2,7 +2,6 @@ package dev.anderle.attributemod.utils;
 
 import com.google.gson.*;
 import dev.anderle.attributemod.AttributeMod;
-import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
@@ -138,5 +137,12 @@ public class Helper {
         JsonObject extra = tag.getAsJsonObject("ExtraAttributes");
         if(!extra.has("id")) return "NO_ID";
         return extra.getAsJsonPrimitive("id").getAsString();
+    }
+
+    /**
+     * Ensures the value x is inside max and min.
+     */
+    public static double withLimits(double value, double max, double min) {
+        return Math.max(Math.min(value, max), min);
     }
 }

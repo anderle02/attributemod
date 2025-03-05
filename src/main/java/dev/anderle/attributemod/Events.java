@@ -1,68 +1,90 @@
 package dev.anderle.attributemod;
 
-import dev.anderle.attributemod.features.ContainerValue;
-import dev.anderle.attributemod.features.KuudraProfit;
-import dev.anderle.attributemod.features.OneTimeMessage;
-import dev.anderle.attributemod.features.TooltipPriceDisplay;
-import net.minecraft.client.gui.Gui;
+import dev.anderle.attributemod.features.*;
+import dev.anderle.attributemod.overlay.ChestOverlayElement;
+import dev.anderle.attributemod.overlay.HudOverlayElement;
+import dev.anderle.attributemod.overlay.OverlayElement;
 import net.minecraft.client.gui.inventory.GuiChest;
-import net.minecraft.inventory.ContainerChest;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import org.lwjgl.input.Mouse;
 
 public class Events {
-    // Classes that need events are initialized here, to avoid duplicate event handlers.
-    ContainerValue containerValue = new ContainerValue();
-    OneTimeMessage oneTimeMessage = new OneTimeMessage();
-    KuudraProfit kuudraProfit = new KuudraProfit(containerValue);
-    TooltipPriceDisplay tooltipPriceDisplay = new TooltipPriceDisplay();
+    // Some objects that respond to events are initialized here, to avoid duplicate event handlers.
+    public static OneTimeMessage oneTimeMessage;
+    public static TooltipPriceDisplay tooltipPriceDisplay;
 
     // Helper variables.
     public static boolean showVigilanceGuiWithNextTick = false;
-    private boolean currentGuiIsKuudraPaidChest = false;
+
+    public static void initializeFeatures() {
+        oneTimeMessage = new OneTimeMessage();
+        tooltipPriceDisplay = new TooltipPriceDisplay();
+    }
 
     @SubscribeEvent
     public void onGuiOpen(GuiOpenEvent e) {
-        if(!(e.gui instanceof GuiChest) || !(((GuiChest) e.gui).inventorySlots instanceof ContainerChest)) {
-            currentGuiIsKuudraPaidChest = false;
-            return;
-        }
+        OverlayElement.ALL.stream()
+                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender())
+                .map(element -> (ChestOverlayElement) element)
+                .forEach(element -> element.onGuiOpen((GuiChest) e.gui));
+    }
 
-        currentGuiIsKuudraPaidChest = ((ContainerChest) ((GuiChest) e.gui).inventorySlots)
-                .getLowerChestInventory().getDisplayName().getUnformattedText()
-                .contains("Paid Chest");
-
-        if(currentGuiIsKuudraPaidChest) kuudraProfit.onGuiOpen((ContainerChest) ((GuiChest) e.gui).inventorySlots);
-        else containerValue.onGuiOpen();
+    @SubscribeEvent
+    public void onRenderGameOverlay(RenderGameOverlayEvent e) {
+        OverlayElement.ALL.stream()
+                .filter(element -> element instanceof HudOverlayElement && element.shouldRender())
+                .map(element -> (HudOverlayElement) element)
+                .forEach(element -> {
+                    element.updateIfNeeded(null);
+                    element.renderOverlay(null);
+                });
     }
 
     @SubscribeEvent
     public void onDrawGuiBackground(GuiScreenEvent.BackgroundDrawnEvent e) {
-        if(!(e.gui instanceof GuiChest) || !(((GuiChest) e.gui).inventorySlots instanceof ContainerChest)) return;
-        if(currentGuiIsKuudraPaidChest) kuudraProfit.onDrawGuiBackground((GuiChest) e.gui);
-        else containerValue.onDrawGuiBackground(e);
+        OverlayElement.ALL.stream()
+                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender())
+                .map(element -> (ChestOverlayElement) element)
+                .forEach(element -> {
+                    element.updateIfNeeded(e.gui);
+                    element.renderOverlay(e.gui);
+                });
     }
 
     @SubscribeEvent
     public void onDrawGuiForeground(GuiScreenEvent.DrawScreenEvent e) {
-        if(!(e.gui instanceof GuiChest) || !(((GuiChest) e.gui).inventorySlots instanceof ContainerChest)) return;
-        if(!currentGuiIsKuudraPaidChest) containerValue.onDrawGuiForeground(e);
+        OverlayElement.ALL.stream()
+                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender())
+                .map(element -> (ChestOverlayElement) element)
+                .forEach(element -> element.onDrawForeground((GuiChest) e.gui));
     }
 
     @SubscribeEvent
-    public void onKeyboardInput(GuiScreenEvent.KeyboardInputEvent.Post e) {
-        if(!(e.gui instanceof GuiChest) || !(((GuiChest) e.gui).inventorySlots instanceof ContainerChest)) return;
-        if(!currentGuiIsKuudraPaidChest) containerValue.onKeyboardInput();
-    }
+    public void onMouseInput(GuiScreenEvent.MouseInputEvent.Pre e) {
+        double mousePosX = (double) Mouse.getEventX() * e.gui.width / e.gui.mc.displayWidth;
+        double mousePosY = (e.gui.height - (double) Mouse.getEventY() * e.gui.height / e.gui.mc.displayHeight);
 
-    @SubscribeEvent
-    public void onMouseInput(GuiScreenEvent.MouseInputEvent e) {
-        if(!(e.gui instanceof GuiChest) || !(((GuiChest) e.gui).inventorySlots instanceof ContainerChest)) return;
-        if(!currentGuiIsKuudraPaidChest) containerValue.onMouseInput(e);
+        OverlayElement.ALL.stream()
+                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender())
+                .map(element -> (ChestOverlayElement) element)
+                .forEach(element -> {
+                    if(!element.isInside(mousePosX, mousePosY)) return;
+
+                    if(Mouse.getEventButton() == 0) {
+                        element.onClick(e, mousePosX, mousePosY);
+                    } else if(Mouse.getEventDWheel() != 0) {
+                        element.onScroll((GuiChest) e.gui, Mouse.getEventDWheel() < 0);
+                        element.onHover((GuiChest) e.gui, mousePosX, mousePosY);
+                    } else {
+                        element.onHover((GuiChest) e.gui, mousePosX, mousePosY);
+                    }
+                });
     }
 
     @SubscribeEvent
