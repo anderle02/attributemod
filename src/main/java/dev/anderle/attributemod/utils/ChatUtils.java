@@ -77,7 +77,7 @@ public class ChatUtils {
      */
     public static IChatComponent decodeToFancyChatMessage(String string) {
         IChatComponent comp = new ChatComponentText(Constants.prefix);
-        for(String part : string.replaceAll("§", "\u00a7").split("#")) {
+        for(String part : string.split("#")) {
             if(part.startsWith("t")) {
                 comp.appendSibling(new ChatComponentText(part.replaceFirst("t", "")));
             } else if(part.startsWith("i")) {

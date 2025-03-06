@@ -1,9 +1,7 @@
 package dev.anderle.attributemod.features;
 
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.anderle.attributemod.AttributeMod;
-import dev.anderle.attributemod.api.Backend;
 import dev.anderle.attributemod.utils.Constants;
 import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.ChatUtils;
@@ -18,6 +16,7 @@ import net.minecraft.util.EnumChatFormatting;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.client.HttpResponseException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -108,27 +107,18 @@ public class AuCommand extends CommandBase {
      * Get result from api and send it to the chat.
      */
     private void showResult(final ICommandSender sender, String attribute, String item, int from, int to) {
-        final AuCommand self = this;
-        AttributeMod.backend.sendGetRequest("/attributeupgrade",
-            "&attribute=" + Helper.urlEncodeAttribute(attribute)
-            + "&item=" + item + "&from=" + from + "&to=" + to,
-        new Backend.ResponseCallback() {
-            @Override
-            public void onResponse(String a) {
-                JsonObject response = new JsonParser().parse(a).getAsJsonObject();
-                ChatUtils.resendChatMessage(self.chat, ChatUtils.decodeToFancyChatMessage(
-                    response.get("text").getAsString()
-                ));
-            }
-
-            @Override
-            public void onError(Exception e) {
-                int statusCode = e instanceof HttpResponseException
-                    ? ((HttpResponseException) e).getStatusCode() : 0;
-                sender.addChatMessage(ChatUtils.errorMessage(e.getMessage(),
-                    statusCode == 0 || statusCode == 400));
-            }
-        });
+        AttributeMod.backend.sendGetRequest(
+                "/attributeupgrade",
+                "&attribute=" + Helper.urlEncodeAttribute(attribute) + "&item=" + item + "&from=" + from + "&to=" + to,
+                (String response) -> ChatUtils.resendChatMessage(this.chat, ChatUtils.decodeToFancyChatMessage(
+                        new JsonParser().parse(response).getAsJsonObject().get("text").getAsString()
+                )),
+                (IOException error) -> {
+                    int statusCode = error instanceof HttpResponseException
+                            ? ((HttpResponseException) error).getStatusCode() : 0;
+                    sender.addChatMessage(ChatUtils.errorMessage(error.getMessage(),
+                            statusCode == 0 || statusCode == 400));
+                });
     }
 
     /**

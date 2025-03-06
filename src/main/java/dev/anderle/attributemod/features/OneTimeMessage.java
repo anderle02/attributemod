@@ -3,7 +3,6 @@ package dev.anderle.attributemod.features;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.anderle.attributemod.AttributeMod;
-import dev.anderle.attributemod.api.Backend;
 import dev.anderle.attributemod.utils.ChatUtils;
 import dev.anderle.attributemod.utils.Constants;
 import net.minecraft.client.Minecraft;
@@ -26,34 +25,30 @@ public class OneTimeMessage {
     private boolean sent = false;
 
     public void onWorldJoin(EntityJoinWorldEvent e) {
-        if(this.sent) return;
+        if(sent) return;
         if(!e.entity.equals(Minecraft.getMinecraft().thePlayer)) return;
-        final EntityPlayerSP player = (EntityPlayerSP) e.entity;
-        this.sent = true;
+        EntityPlayerSP player = (EntityPlayerSP) e.entity;
+        sent = true;
 
-        AttributeMod.backend.sendGetRequest("/onetimemessage", "", new Backend.ResponseCallback() {
-            @Override
-            public void onResponse(String a) {
-                JsonObject response = new JsonParser().parse(a).getAsJsonObject();
-                boolean isWhitelisted = response.get("whitelisted").getAsBoolean();
-                String latestVersion = response.get("latest").getAsString();
-                String downloadLink = response.get("download").getAsString();
+        AttributeMod.backend.sendGetRequest("/onetimemessage", "",
+            (String response) -> {
+                JsonObject responseObject = new JsonParser().parse(response).getAsJsonObject();
+                boolean isWhitelisted = responseObject.get("whitelisted").getAsBoolean();
+                String latestVersion = responseObject.get("latest").getAsString();
+                String downloadLink = responseObject.get("download").getAsString();
 
                 if(isWhitelisted) {
                     if(latestVersion.equals(AttributeMod.VERSION)) return;
                     try {
                         player.addChatMessage(getUpdateAvailableMessage(latestVersion, downloadLink));
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    } catch (IOException error) {
+                        AttributeMod.LOGGER.error("Failed to send One Time Message.", error);
                     }
                 } else {
                     player.addChatMessage(getNotWhitelistedMessage());
                 }
-            }
-
-            @Override
-            public void onError(Exception ignored) {}
-        });
+            },
+            (IOException error) -> AttributeMod.LOGGER.error("Failed to fetch data from /onetimemessage", error));
     }
 
     private IChatComponent getUpdateAvailableMessage(String newVersion, String downloadLink) throws IOException {

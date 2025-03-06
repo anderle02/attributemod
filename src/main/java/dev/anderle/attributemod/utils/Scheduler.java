@@ -1,50 +1,66 @@
 package dev.anderle.attributemod.utils;
 
 import dev.anderle.attributemod.AttributeMod;
-import org.apache.logging.log4j.Level;
 
-import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
+/**
+ * This is meant for repetitive tasks that must not run on the main thread because they would freeze the game.
+ * To interact with the game from within a task, use AttributeMod.mc.addScheduledTask().
+ */
 public class Scheduler {
-    private final Map<String, Task> tasks = new HashMap<String, Task>();
+    public static final Map<String, Task> TASKS = new HashMap<>();
 
-    /**
-     * Registers tasks to be executed every x seconds.
-     */
     public void registerTasks() {
-        this.tasks.put("ah", new Task("ah", 60000, new Callable<Void>() {
-            public Void call() throws IOException {
-                AttributeMod.backend.refreshPrices();
-                return null;
-            }
-        }));
+        TASKS.put("ah", new Task("ah", 2 * 60 * 20, () -> AttributeMod.backend.refreshPrices()));
     }
 
-    public void startExecutingTasks(String ...names) {
-        for(String name : names) {
-            if(!tasks.containsKey(name)) {
-                AttributeMod.LOGGER.error("Can't start task '" + name + "' because it was never registered.");
-                continue;
+    public void executeTasksIfNeeded() {
+        TASKS.values().forEach(Task::incrementTickCounter);
+
+        List<Task> toExecute = TASKS.values().stream().filter(Task::isDue).collect(Collectors.toList());
+        if(toExecute.isEmpty()) return;
+
+        new Thread(() -> toExecute.forEach(Task::execute)).start();
+    }
+
+    /** Task to execute every x ticks. Handles errors and skips execution if previous iteration is still running. */
+    public static class Task {
+        private int tickCounter = Integer.MAX_VALUE / 2; // So tasks get executed with first tick.
+        private boolean isActive = false;
+
+        private final Runnable function;
+        private final String name;
+        private final int interval;
+
+        public Task(String name, int interval, Runnable function) {
+            this.function = function;
+            this.name = name;
+            this.interval = interval;
+        }
+
+        public void execute() {
+            tickCounter = 0;
+            isActive = true;
+            try {
+                function.run();
+            } catch(Exception e) {
+                AttributeMod.LOGGER.error("Failed to execute task \"" + name + "\".", e);
+            } finally {
+                isActive = false;
             }
-            final Task task = tasks.get(name);
-            new Thread(new Runnable() {
-                public void run() {
-                    while(true) {
-                        long time = System.currentTimeMillis();
-                        task.execute();
-                        while(time > System.currentTimeMillis() - task.getInterval()) {
-                            try {
-                                Thread.sleep(100);
-                            } catch (InterruptedException e) {
-                                AttributeMod.LOGGER.log(Level.DEBUG, e.getMessage());
-                            }
-                        }
-                    }
-                }
-            }).start();
+            AttributeMod.LOGGER.info("Successfully executed task \"" + name + "\".");
+        }
+
+        public boolean isDue() {
+            return tickCounter >= interval && !isActive;
+        }
+
+        public void incrementTickCounter() {
+            tickCounter++;
         }
     }
 }

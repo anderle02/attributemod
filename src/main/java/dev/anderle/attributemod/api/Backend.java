@@ -16,6 +16,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class Backend {
     public static final String URL = "https://anderle.dev/api";
@@ -24,22 +25,16 @@ public class Backend {
     public JsonObject data;
 
     public void refreshPrices() {
-        sendGetRequest("/evaluate", "", new ResponseCallback() {
-            @Override
-            public void onResponse(String a) {
-                data = new JsonParser().parse(a).getAsJsonObject();
-            }
-            @Override
-            public void onError(Exception e) {
-                data = null;
-            }
-        });
+        sendGetRequest("/evaluate", "",
+                (String response) -> data = new JsonParser().parse(response).getAsJsonObject(),
+                (IOException error) -> data = null);
     }
 
     public int getLbin(String itemId) {
         return Optional.ofNullable(data)
                 .map(obj -> obj.getAsJsonObject("lbin"))
-                .map(obj -> obj.getAsJsonObject(itemId))
+                .map(obj -> obj.get(itemId))
+                .filter(JsonElement::isJsonPrimitive)
                 .map(JsonElement::getAsInt)
                 .orElse(0);
     }
@@ -48,6 +43,7 @@ public class Backend {
                 .map(obj -> obj.getAsJsonObject("single"))
                 .map(obj -> obj.getAsJsonObject(itemId))
                 .map(obj -> obj.get(attribute))
+                .filter(JsonElement::isJsonPrimitive)
                 .map(JsonElement::getAsInt)
                 .orElse(0);
     }
@@ -57,11 +53,12 @@ public class Backend {
                 .map(obj -> obj.getAsJsonObject(itemId))
                 .map(obj -> obj.getAsJsonObject(firstAttribute))
                 .map(obj -> obj.get(secondAttribute))
+                .filter(JsonElement::isJsonPrimitive)
                 .map(JsonElement::getAsInt)
                 .orElse(0);
     }
 
-    public void sendGetRequest(final String path, final String params, final ResponseCallback callback) {
+    public void sendGetRequest(final String path, final String params, Consumer<String> onResponse, Consumer<IOException> onError) {
         new Thread(() -> {
             try {
                 URL url = buildUrl(path, params);
@@ -72,12 +69,14 @@ public class Backend {
                 con.setConnectTimeout(20000);
                 con.setReadTimeout(20000);
 
-                handleResponse(callback, con);
-            } catch(IOException e) { callback.onError(e); }
+                handleResponse(onResponse, con);
+            } catch(IOException e) {
+                AttributeMod.mc.addScheduledTask(() -> onError.accept(e));
+            }
         }).start();
     }
 
-    public void sendPostRequest(final String path, final String params, final String body, final ResponseCallback callback) {
+    public void sendPostRequest(final String path, final String params, final String body, Consumer<String> onResponse, Consumer<IOException> onError) {
         new Thread(() -> {
             try {
                 URL url = buildUrl(path, params);
@@ -95,13 +94,15 @@ public class Backend {
                     os.write(input, 0, input.length);
                 }
 
-                handleResponse(callback, con);
+                handleResponse(onResponse, con);
 
-            } catch(IOException e) { callback.onError(e); }
+            } catch(IOException e) {
+                AttributeMod.mc.addScheduledTask(() -> onError.accept(e));
+            }
         }).start();
     }
 
-    private void handleResponse(ResponseCallback callback, HttpsURLConnection con) throws IOException {
+    private void handleResponse(Consumer<String> onResponse, HttpsURLConnection con) throws IOException {
         int status = con.getResponseCode();
         if(status != 200) throw new HttpResponseException(status, con.getResponseMessage());
 
@@ -112,7 +113,7 @@ public class Backend {
         in.close();
 
         con.disconnect();
-        callback.onResponse(content.toString());
+        AttributeMod.mc.addScheduledTask(() -> onResponse.accept(content.toString()));
     }
 
     private URL buildUrl(String path, String params) throws MalformedURLException {
@@ -152,10 +153,5 @@ public class Backend {
         } catch (Exception ignored) {
         }
         return null;
-    }
-
-    public interface ResponseCallback {
-        void onResponse(String a);
-        void onError(Exception e);
     }
 }

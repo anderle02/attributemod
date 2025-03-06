@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.anderle.attributemod.AttributeMod;
-import dev.anderle.attributemod.api.Backend;
 import dev.anderle.attributemod.utils.Helper;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiChest;
@@ -20,6 +19,7 @@ import net.minecraftforge.client.event.GuiScreenEvent;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -138,19 +138,12 @@ public class RewardChestOverlay extends ChestOverlayElement {
             chestItems.add(nbt);
         }
 
-        AttributeMod.backend.sendPostRequest("/kuudrachest", "&tier=" + getKuudraTier(), chestItems.toString(), new Backend.ResponseCallback() {
-            @Override
-            public void onResponse(String a) {
-                for(JsonElement line : new JsonParser().parse(a.replaceAll("§", "§")).getAsJsonArray()) {
-                    content.add(line.getAsString());
-                }
-            }
-
-            @Override
-            public void onError(Exception e) {
-                AttributeMod.LOGGER.error("Failed fetching from /kuudrachest." , e);
-            }
-        });
+        AttributeMod.backend.sendPostRequest("/kuudrachest", "&tier=" + getKuudraTier(), chestItems.toString(),
+                (String response) -> {
+                    for(JsonElement line : new JsonParser().parse(response).getAsJsonArray()) {
+                        content.add(line.getAsString());
+                    }
+                }, (IOException error) -> AttributeMod.LOGGER.error("Failed fetching from /kuudrachest." , error));
     }
 
     private char getKuudraTier() {

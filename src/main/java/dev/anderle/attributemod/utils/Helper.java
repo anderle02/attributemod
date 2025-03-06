@@ -128,21 +128,15 @@ public class Helper {
     }
 
     /**
-     * Get Hypixel's item ID from the NBT tag.
-     */
-    public static String getHypixelId(JsonObject nbt) {
-        if(!nbt.has("tag")) return "NO_ID";
-        JsonObject tag = nbt.getAsJsonObject("tag");
-        if(!tag.has("ExtraAttributes")) return "NO_ID";
-        JsonObject extra = tag.getAsJsonObject("ExtraAttributes");
-        if(!extra.has("id")) return "NO_ID";
-        return extra.getAsJsonPrimitive("id").getAsString();
-    }
-
-    /**
      * Ensures the value x is inside max and min.
      */
     public static double withLimits(double value, double max, double min) {
+        return Math.max(Math.min(value, max), min);
+    }
+    /**
+     * Ensures the value x is inside max and min.
+     */
+    public static int withLimits(int value, int max, int min) {
         return Math.max(Math.min(value, max), min);
     }
 }

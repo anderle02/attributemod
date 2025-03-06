@@ -3,6 +3,7 @@ package dev.anderle.attributemod;
 import dev.anderle.attributemod.api.Backend;
 import dev.anderle.attributemod.features.*;
 import dev.anderle.attributemod.overlay.OverlayElement;
+import dev.anderle.attributemod.utils.Scheduler;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
@@ -23,21 +24,23 @@ public class AttributeMod {
     public static final String VERSION = "1.1.1";
     public static final Logger LOGGER = LogManager.getLogger(MODID);
 
+    public static Scheduler scheduler;
     public static Backend backend;
     public static File modFolder;
     public static Config config;
     public static Minecraft mc;
 
-    @Mod.EventHandler
+    @Mod.EventHandler @SuppressWarnings("unused")
     public void preInit(FMLPreInitializationEvent event) {
         modFolder = event.getSourceFile().getParentFile();
     }
 
-    @Mod.EventHandler
+    @Mod.EventHandler @SuppressWarnings("unused")
     public void init(FMLInitializationEvent event) {
+        mc = Minecraft.getMinecraft();
+        scheduler = new Scheduler();
         backend = new Backend();
         config = new Config();
-        mc = Minecraft.getMinecraft();
 
         MinecraftForge.EVENT_BUS.register(new Events());
 
@@ -49,9 +52,7 @@ public class AttributeMod {
 
         Events.initializeFeatures();
         OverlayElement.initAll();
-
-        //scheduler.registerTasks();
-        //scheduler.startExecutingTasks("ah");
+        scheduler.registerTasks();
 
         LOGGER.log(Level.INFO, "Attribute Mod Loaded!");
     }

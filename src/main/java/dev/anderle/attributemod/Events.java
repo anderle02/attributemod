@@ -106,5 +106,7 @@ public class Events {
             showVigilanceGuiWithNextTick = false;
             AttributeMod.mc.displayGuiScreen(AttributeMod.config.gui());
         }
+        // Checks for due tasks and executes them on a different thread.
+        AttributeMod.scheduler.executeTasksIfNeeded();
     }
 }

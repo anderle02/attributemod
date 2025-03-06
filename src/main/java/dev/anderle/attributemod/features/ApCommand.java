@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.anderle.attributemod.utils.Constants;
 import dev.anderle.attributemod.AttributeMod;
-import dev.anderle.attributemod.api.Backend;
 import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.ChatUtils;
 import net.minecraft.client.Minecraft;
@@ -18,6 +17,7 @@ import net.minecraft.util.*;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.client.HttpResponseException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -127,62 +127,43 @@ public class ApCommand extends CommandBase {
      * Handle processing if one attribute was entered.
      * If no level was entered, pass "1" as argument.
      */
-    private void showSinglePrices(final ICommandSender sender, final String attribute, final int level, String appearance) {
-        if(level < 1 || level > 10) {
-            ChatUtils.badNumber(sender, 1, 10);
-            return;
-        }
-        AttributeMod.backend.sendGetRequest("/attributeprice",
-            "&a1=" + Helper.urlEncodeAttribute(attribute) + "&l1=" + level + (appearance == null ? "" : "&appearance=" + appearance),
-        new Backend.ResponseCallback() {
-            @Override
-            public void onResponse(String a) {
-                decodeResponseAndSendText(
-                    new JsonParser().parse(a).getAsJsonObject(),
-                    "/ap %%data%%{\"a1\":\"" + attribute + "\",\"l1\":" + level + ",\"appearance\":\"%%appearance%%\"}"
-                );
-            }
-            @Override
-            public void onError(Exception e) {
-                int statusCode = e instanceof HttpResponseException
-                    ? ((HttpResponseException) e).getStatusCode() : 0;
-                sender.addChatMessage(ChatUtils.errorMessage(e.getMessage(),
-                    statusCode == 0 || statusCode == 400));
-            }
-        });
+    private void showSinglePrices(ICommandSender sender, String attribute, int level, String appearance) {
+        float level_ = Helper.withLimits(level, 10, 1);
+
+        AttributeMod.backend.sendGetRequest(
+                "/attributeprice",
+                "&a1=" + Helper.urlEncodeAttribute(attribute) + "&l1=" + level_ + (appearance == null ? "" : "&appearance=" + appearance),
+                (String response) -> decodeResponseAndSendText(
+                        new JsonParser().parse(response).getAsJsonObject(),
+                        "/ap %%data%%{\"a1\":\"" + attribute + "\",\"l1\":" + level_ + ",\"appearance\":\"%%appearance%%\"}"),
+                (IOException error) -> {
+                    int statusCode = error instanceof HttpResponseException
+                            ? ((HttpResponseException) error).getStatusCode() : 0;
+                    sender.addChatMessage(ChatUtils.errorMessage(error.getMessage(),
+                            statusCode == 0 || statusCode == 400));
+                });
     }
 
     /**
      * Handle processing if two attributes were entered (with or without level).
      */
-    private void showCombinationPrices(final ICommandSender sender,
-                                       final String first, final int firstLevel,
-                                       final String second, final int secondLevel,
-                                       String appearance
-    ) {
-        if(firstLevel < 0 || firstLevel > 10 || secondLevel < 0 || secondLevel > 10) {
-            ChatUtils.badNumber(sender, 1, 10);
-            return;
-        }
+    private void showCombinationPrices(ICommandSender sender, String first, int firstLevel, String second, int secondLevel, String appearance) {
+        int firstLevel_ = Helper.withLimits(firstLevel, 10, 0);
+        int secondLevel_ = Helper.withLimits(secondLevel, 10, 0);
+
         AttributeMod.backend.sendGetRequest("/attributeprice",
-        "&a1=" + Helper.urlEncodeAttribute(first) + "&l1=" + firstLevel
-            + "&a2=" + Helper.urlEncodeAttribute(second) + "&l2=" + secondLevel
+        "&a1=" + Helper.urlEncodeAttribute(first) + "&l1=" + firstLevel_
+            + "&a2=" + Helper.urlEncodeAttribute(second) + "&l2=" + secondLevel_
             + (appearance == null ? "" : "&appearance=" + appearance),
-        new Backend.ResponseCallback() {
-            @Override
-            public void onResponse(String a) {
-                decodeResponseAndSendText(
-                    new JsonParser().parse(a).getAsJsonObject(),
-                    "/ap %%data%%{\"a1\":\"" + first + "\",\"l1\":" + firstLevel + ",\"a2\":\"" + second + "\",\"l2\":" + secondLevel + ",\"appearance\":\"%%appearance%%\"}"
-                );
-            }
-            @Override
-            public void onError(Exception e) {
-                int statusCode = e instanceof HttpResponseException
-                    ? ((HttpResponseException) e).getStatusCode() : 0;
-                sender.addChatMessage(ChatUtils.errorMessage(e.getMessage(),
-                    statusCode == 0 || statusCode == 400));
-            }
+
+        (String response) -> decodeResponseAndSendText(
+                new JsonParser().parse(response).getAsJsonObject(),
+                "/ap %%data%%{\"a1\":\"" + first + "\",\"l1\":" + firstLevel_ + ",\"a2\":\"" + second + "\",\"l2\":" + secondLevel_ + ",\"appearance\":\"%%appearance%%\"}"
+        ), (IOException error) -> {
+                int statusCode = error instanceof HttpResponseException
+                        ? ((HttpResponseException) error).getStatusCode() : 0;
+                sender.addChatMessage(ChatUtils.errorMessage(error.getMessage(),
+                        statusCode == 0 || statusCode == 400));
         });
     }
 
