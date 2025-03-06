@@ -3,18 +3,21 @@ package dev.anderle.attributemod.overlay;
 import dev.anderle.attributemod.AttributeMod;
 import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.ItemWithAttributes;
+import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.inventory.ContainerChest;
 import net.minecraft.inventory.Slot;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.util.*;
 import java.util.List;
 
@@ -28,6 +31,7 @@ public class ChestItemDisplay extends ChestOverlayElement {
     /** Index of the item string the user is currently hovering over. */
     private int hoveredItem = -1;
     private int scrollOffset = 0;
+    private boolean copyButtonFocused = false;
 
     public ChestItemDisplay() {
         super("Chest Overlay", 1000, Color.blue);
@@ -42,6 +46,7 @@ public class ChestItemDisplay extends ChestOverlayElement {
 
     @Override
     public void onClick(GuiScreenEvent.MouseInputEvent e, double mouseX, double mouseY) {
+        if(copyButtonFocused) { copyToClipboard(); return; }
         if(hoveredItem == -1) return;
 
         Slot slot = itemSlotMapping.get(hoveredItem);
@@ -60,13 +65,14 @@ public class ChestItemDisplay extends ChestOverlayElement {
     public void onHover(GuiChest chest, double mouseX, double mouseY) {
         // Font height and width need to be scaled by the scale used for rendering.
         double scaledLineHeight = (chest.mc.fontRendererObj.FONT_HEIGHT + 1) * scale / 100;
-        int itemIndex = (int) Math.floor((mouseY - position.y) / scaledLineHeight) - 1;
+        int focusedLine = (int) Math.floor((mouseY - position.y) / scaledLineHeight);
 
-        if(isHoveringOverItemString(itemIndex, chest.mc.fontRendererObj, mouseX)) {
-            hoveredItem = itemIndex + scrollOffset;
+        if(isHoveringOverItemString(focusedLine - 1, chest.mc.fontRendererObj, mouseX)) {
+            hoveredItem = focusedLine - 1 + scrollOffset;
         } else {
             hoveredItem = - 1;
         }
+        checkIfCopyButtonFocused(mouseX, focusedLine);
     }
 
     @Override
@@ -103,7 +109,7 @@ public class ChestItemDisplay extends ChestOverlayElement {
 
         newContent.add(0, EnumChatFormatting.DARK_RED + "Total Value " + EnumChatFormatting.YELLOW +
                 "-" + EnumChatFormatting.GOLD + " " + Helper.formatNumber(totalValue) + EnumChatFormatting.GRAY +
-                " [Copy to Clipboard]");
+                " [Copy]");
 
         content = newContent;
     }
@@ -125,11 +131,8 @@ public class ChestItemDisplay extends ChestOverlayElement {
     }
 
     @Override // Show this overlay in all GuiChest except Kuudra reward chests.
-    public boolean shouldRender() {
-        if(!this.isEnabled()) return false;
-
-        GuiScreen screen = AttributeMod.mc.currentScreen;
-        if(!(screen instanceof GuiChest)) return false;
+    public boolean shouldRender(GuiScreen screen) {
+        if(!this.isEnabled() || !(screen instanceof GuiChest)) return false;
 
         return !((ContainerChest) ((GuiChest) screen).inventorySlots)
                 .getLowerChestInventory().getDisplayName().getUnformattedText()
@@ -161,9 +164,12 @@ public class ChestItemDisplay extends ChestOverlayElement {
         GL11.glPushMatrix();
         GL11.glScaled(scale / 100, scale / 100, 1);
 
-        screen.drawString(screen.mc.fontRendererObj,
-                (itemsAbove != 0 ? EnumChatFormatting.YELLOW + "^ " + itemsAbove + " more " : "") + content.get(0),
-                (itemsAbove == 0 ? screen.mc.fontRendererObj.getStringWidth("^ 1 more ") : 0) + (int) (position.x * 100 / scale), (int) (position.y * 100 / scale),
+        String firstLine = (itemsAbove != 0 ? EnumChatFormatting.YELLOW + "^ " + itemsAbove + " "  : "")
+                + (copyButtonFocused ? content.get(0).replace("[Copy]", EnumChatFormatting.YELLOW + "[Copy]" + EnumChatFormatting.GRAY) : content.get(0));
+
+        screen.drawString(screen.mc.fontRendererObj, firstLine,
+                (itemsAbove == 0 ? screen.mc.fontRendererObj.getStringWidth("^ 0 ") : 0) + (int) (position.x * 100 / scale),
+                (int) (position.y * 100 / scale),
                 0xffffffff);
 
         int i = 1;
@@ -177,7 +183,7 @@ public class ChestItemDisplay extends ChestOverlayElement {
         }
 
         if(itemsBelow != 0) screen.drawString(screen.mc.fontRendererObj,
-                EnumChatFormatting.YELLOW + "v " + itemsBelow + " more",
+                EnumChatFormatting.YELLOW + "v " + itemsBelow,
                 (int) (position.x * 100 / scale), (int) (position.y * 100 / scale) + i * (screen.mc.fontRendererObj.FONT_HEIGHT + 1) + 1,
                 0xffffffff);
 
@@ -218,5 +224,41 @@ public class ChestItemDisplay extends ChestOverlayElement {
                 && index + scrollOffset < itemSlotMapping.size()
                 && index != - 1
                 && mouseX - position.x < fontRenderer.getStringWidth(content.get(index + scrollOffset + 1)) * scale / 100;
+    }
+
+    private void checkIfCopyButtonFocused(double mousePosX, int focusedLine) {
+        int copyButtonPosX = position.x + AttributeMod.mc.fontRendererObj.getStringWidth(
+                "^ " + scrollOffset + " " + content.get(0).split("\\[Copy")[0]);
+
+        copyButtonFocused = focusedLine == 0
+                && mousePosX >= copyButtonPosX
+                && mousePosX <= copyButtonPosX + AttributeMod.mc.fontRendererObj.getStringWidth("[Copy]");
+    }
+
+    private void copyToClipboard() {
+        StringBuilder toCopy = new StringBuilder("**Selling the following items**\n");
+        for(Map.Entry<String, Integer> item : getItemStringsToCopy().entrySet()) {
+            toCopy.append("\n").append(item.getKey());
+            if(item.getValue() > 1) toCopy.append(" **x").append(item.getValue()).append("**");
+        }
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(
+                toCopy.toString().replaceAll(EnumChatFormatting.RED.toString().charAt(0) + ".", "")), null);
+
+        AttributeMod.mc.getSoundHandler().playSound( // Play the button sound...
+                PositionedSoundRecord.create(new ResourceLocation("gui.button.press"), 1.0F));
+    }
+
+    private LinkedHashMap<String, Integer> getItemStringsToCopy() {
+        LinkedHashMap<String, Integer> items = new LinkedHashMap<>(); // summarize items that are the same
+        for(int i = 1; i < content.size(); i++) {
+            String item = content.get(i);
+            if(item.contains("Attribute Shard")) { // make attribute shards look nicer in the message
+                item = item.replace(" Attribute Shard -", "")
+                        .replace("[", "").replace("]", "");
+            }
+            Integer count = items.get(item);
+            items.put(item, count == null ? 1 : count + 1);
+        }
+        return items;
     }
 }

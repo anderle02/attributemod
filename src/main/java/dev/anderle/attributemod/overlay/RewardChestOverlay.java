@@ -67,12 +67,12 @@ public class RewardChestOverlay extends ChestOverlayElement {
         if(content.isEmpty()) return;
 
         GL11.glPushMatrix();
-        GL11.glScaled(scale, scale, 1);
+        GL11.glScaled(scale / 100, scale / 100, 1);
 
         for(int i = 0; i < content.size(); i++) {
             screen.drawString(
                     screen.mc.fontRendererObj, content.get(i),
-                    position.x, position.y + (i + 1) * (screen.mc.fontRendererObj.FONT_HEIGHT + 1),
+                    (int) (position.x * 100 / scale), (int) (position.y * 100 / scale) + (i + 1) * (screen.mc.fontRendererObj.FONT_HEIGHT + 1),
                     0xffffffff
             );
         }
@@ -107,11 +107,8 @@ public class RewardChestOverlay extends ChestOverlayElement {
     }
 
     @Override
-    public boolean shouldRender() {
-        if(!this.isEnabled()) return false;
-
-        GuiScreen screen = AttributeMod.mc.currentScreen;
-        if(!(screen instanceof GuiChest)) return false;
+    public boolean shouldRender(GuiScreen screen) {
+        if(!this.isEnabled() || !(screen instanceof GuiChest)) return false;
 
         return ((ContainerChest) ((GuiChest) screen).inventorySlots)
                 .getLowerChestInventory().getDisplayName().getUnformattedText()

@@ -1,7 +1,9 @@
 package dev.anderle.attributemod.overlay;
 
 import dev.anderle.attributemod.Events;
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Mouse;
 
 import java.awt.*;
@@ -15,6 +17,7 @@ public class MoveOverlayGui extends GuiScreen {
     public void initGui() {
         super.initGui();
         OverlayElement.ALL.forEach(OverlayElement::readScaleAndLocation);
+        addResetButton();
     }
 
     @Override // Reset all temp variables, save config and return to Vigilance gui.
@@ -35,14 +38,12 @@ public class MoveOverlayGui extends GuiScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         super.drawScreen(mouseX, mouseY, partialTicks);
 
-        ListIterator<OverlayElement> it = OverlayElement.ALL.listIterator(OverlayElement.ALL.size());
+        drawChestGui();
 
+        ListIterator<OverlayElement> it = OverlayElement.ALL.listIterator(OverlayElement.ALL.size());
         while(it.hasPrevious()) { // Iterate in reverse order so the element in the front is always the one focused when hovered over.
             OverlayElement element = it.previous();
-            if(!element.isEnabled()) continue;
-
-            element.drawBounds();
-            element.drawOverlayName(this);
+            if(element.isEnabled()) element.drawMoveGuiRepresentation(this);
         }
     }
 
@@ -98,5 +99,33 @@ public class MoveOverlayGui extends GuiScreen {
                 if(element.isFocusedInMoveGui) oneIsFocused = true;
             }
         }
+    }
+
+    @Override
+    protected void actionPerformed(GuiButton button) throws IOException {
+        super.actionPerformed(button);
+        if(button.id != 0) return;
+
+        OverlayElement.ALL.forEach(element -> {
+            element.position = new Point(0, 0);
+            element.scale = 100;
+            element.size = element.getSize();
+        });
+    }
+
+    private void addResetButton() {
+        String buttonText = "Reset Locations";
+        int buttonWidth = mc.fontRendererObj.getStringWidth(buttonText) + 20;
+        buttonList.add(new GuiButton(0, width - buttonWidth - 10, height - 30, buttonWidth, 20, buttonText));
+    }
+
+    private void drawChestGui() {
+        Point chestPos = new Point((width - ChestOverlayElement.CHEST_GUI_WIDTH) / 2, (height - ChestOverlayElement.CHEST_GUI_HEIGHT) / 2);
+
+        mc.getTextureManager().bindTexture(new ResourceLocation("textures/gui/container/generic_54.png"));
+        drawTexturedModalRect(chestPos.x, chestPos.y, 0, 0, ChestOverlayElement.CHEST_GUI_WIDTH, ChestOverlayElement.CHEST_GUI_HEIGHT);
+
+        mc.fontRendererObj.drawString("This represents your Chest!",
+                chestPos.x + 8, chestPos.y + 6, 4210752); // Minecraft hardcoded values for the chest title.
     }
 }

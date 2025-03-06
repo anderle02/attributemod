@@ -1,6 +1,5 @@
 package dev.anderle.attributemod.overlay;
 
-import dev.anderle.attributemod.AttributeMod;
 import dev.anderle.attributemod.utils.Helper;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
@@ -43,8 +42,8 @@ public abstract class OverlayElement {
         ALL.add(this);
     }
 
-    /** Draw a rectangle representing this overlay. */
-    public void drawBounds() {
+    /** Draw a rectangle for this overlay to the MoveOverlayGui, including the overlay name. */
+    public void drawMoveGuiRepresentation(GuiScreen screen) {
         Tessellator tessellator = Tessellator.getInstance();
         WorldRenderer renderer = tessellator.getWorldRenderer();
 
@@ -62,13 +61,16 @@ public abstract class OverlayElement {
         tessellator.draw();
         GlStateManager.enableTexture2D();
         GL11.glDisable(GL11.GL_BLEND);
-    }
-    /** Draw the overlay name in the middle of the overlay. */
-    public void drawOverlayName(GuiScreen screen) {
-        screen.drawCenteredString(AttributeMod.mc.fontRendererObj, name,
+
+        screen.drawCenteredString(screen.mc.fontRendererObj, name,
                 position.x + size.width / 2,
-                position.y + size.height / 2 - AttributeMod.mc.fontRendererObj.FONT_HEIGHT / 2,
+                position.y + size.height / 2 - screen.mc.fontRendererObj.FONT_HEIGHT / 2,
                 color.getRGB());
+
+        if(isFocusedInMoveGui) screen.drawCenteredString(screen.mc.fontRendererObj,
+                "(Scroll to adjust size)",
+                position.x + size.width / 2,
+                position.y + size.height / 2 + 2 + screen.mc.fontRendererObj.FONT_HEIGHT / 2, color.getRGB());
     }
     /** Update this overlay's content, if its last update was long ago. */
     public void updateIfNeeded(GuiScreen screen) {
@@ -78,7 +80,6 @@ public abstract class OverlayElement {
             updateData(screen);
         }
     }
-
     /** Update this overlay as soon as possible. */
     public void scheduleImmediateUpdate() {
         lastUpdate = 0;
@@ -86,10 +87,6 @@ public abstract class OverlayElement {
     /** Whether the mouse cursor is inside this overlay. */
     public boolean isInside(double mouseX, double mouseY) {
         return new Rectangle(position, size).contains(mouseX, mouseY);
-    }
-    /** Get this overlay's scale in %. */
-    public double getScale() {
-        return scale;
     }
     /** Move the overlay by dx and dy pixels. */
     public void moveBy(int dx, int dy, int screenWidth, int screenHeight) {
@@ -121,7 +118,7 @@ public abstract class OverlayElement {
     /** Whether this overlay is enabled (set in config). */
     public abstract boolean isEnabled();
     /** Whether this overlay should currently be rendered. */
-    public abstract boolean shouldRender();
+    public abstract boolean shouldRender(GuiScreen screen);
     /** Get the current overlay size (depends on the overlay's content). */
     public abstract Dimension getSize();
     /** Update this overlay's content and save it. */

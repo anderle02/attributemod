@@ -27,18 +27,18 @@ public class Events {
         tooltipPriceDisplay = new TooltipPriceDisplay();
     }
 
-    @SubscribeEvent
+    @SubscribeEvent @SuppressWarnings("unused")
     public void onGuiOpen(GuiOpenEvent e) {
         OverlayElement.ALL.stream()
-                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender())
+                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender(e.gui))
                 .map(element -> (ChestOverlayElement) element)
                 .forEach(element -> element.onGuiOpen((GuiChest) e.gui));
     }
 
-    @SubscribeEvent
+    @SubscribeEvent @SuppressWarnings("unused")
     public void onRenderGameOverlay(RenderGameOverlayEvent e) {
         OverlayElement.ALL.stream()
-                .filter(element -> element instanceof HudOverlayElement && element.shouldRender())
+                .filter(element -> element instanceof HudOverlayElement && element.shouldRender(null))
                 .map(element -> (HudOverlayElement) element)
                 .forEach(element -> {
                     element.updateIfNeeded(null);
@@ -46,10 +46,10 @@ public class Events {
                 });
     }
 
-    @SubscribeEvent
+    @SubscribeEvent @SuppressWarnings("unused")
     public void onDrawGuiBackground(GuiScreenEvent.BackgroundDrawnEvent e) {
         OverlayElement.ALL.stream()
-                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender())
+                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender(e.gui))
                 .map(element -> (ChestOverlayElement) element)
                 .forEach(element -> {
                     element.updateIfNeeded(e.gui);
@@ -57,25 +57,23 @@ public class Events {
                 });
     }
 
-    @SubscribeEvent
+    @SubscribeEvent @SuppressWarnings("unused")
     public void onDrawGuiForeground(GuiScreenEvent.DrawScreenEvent e) {
         OverlayElement.ALL.stream()
-                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender())
+                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender(e.gui))
                 .map(element -> (ChestOverlayElement) element)
                 .forEach(element -> element.onDrawForeground((GuiChest) e.gui));
     }
 
-    @SubscribeEvent
+    @SubscribeEvent @SuppressWarnings("unused")
     public void onMouseInput(GuiScreenEvent.MouseInputEvent.Pre e) {
         double mousePosX = (double) Mouse.getEventX() * e.gui.width / e.gui.mc.displayWidth;
         double mousePosY = (e.gui.height - (double) Mouse.getEventY() * e.gui.height / e.gui.mc.displayHeight);
 
         OverlayElement.ALL.stream()
-                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender())
+                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender(e.gui) && element.isInside(mousePosX, mousePosY))
                 .map(element -> (ChestOverlayElement) element)
                 .forEach(element -> {
-                    if(!element.isInside(mousePosX, mousePosY)) return;
-
                     if(Mouse.getEventButton() == 0) {
                         element.onClick(e, mousePosX, mousePosY);
                     } else if(Mouse.getEventDWheel() != 0) {
@@ -87,17 +85,17 @@ public class Events {
                 });
     }
 
-    @SubscribeEvent
+    @SubscribeEvent @SuppressWarnings("unused")
     public void onWorldJoin(EntityJoinWorldEvent e) {
         oneTimeMessage.onWorldJoin(e);
     }
 
-    @SubscribeEvent
+    @SubscribeEvent @SuppressWarnings("unused")
     public void onRenderToolTip(ItemTooltipEvent e) {
         tooltipPriceDisplay.onRenderToolTip(e);
     }
 
-    @SubscribeEvent
+    @SubscribeEvent @SuppressWarnings("unused")
     public void tick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             return;
