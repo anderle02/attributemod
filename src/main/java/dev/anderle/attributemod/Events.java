@@ -74,7 +74,7 @@ public class Events {
                 .filter(element -> element instanceof ChestOverlayElement && element.shouldRender(e.gui) && element.isInside(mousePosX, mousePosY))
                 .map(element -> (ChestOverlayElement) element)
                 .forEach(element -> {
-                    if(Mouse.getEventButton() == 0) {
+                    if(Mouse.getEventButton() == 0 && Mouse.isButtonDown(0)) {
                         element.onClick(e, mousePosX, mousePosY);
                     } else if(Mouse.getEventDWheel() != 0) {
                         element.onScroll((GuiChest) e.gui, Mouse.getEventDWheel() < 0);
