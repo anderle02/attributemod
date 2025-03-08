@@ -29,6 +29,8 @@ public class Events {
 
     @SubscribeEvent @SuppressWarnings("unused")
     public void onGuiOpen(GuiOpenEvent e) {
+        if(!AttributeMod.config.modEnabled) return;
+
         OverlayElement.ALL.stream()
                 .filter(element -> element instanceof ChestOverlayElement && element.shouldRender(e.gui))
                 .map(element -> (ChestOverlayElement) element)
@@ -37,6 +39,8 @@ public class Events {
 
     @SubscribeEvent @SuppressWarnings("unused")
     public void onRenderGameOverlay(RenderGameOverlayEvent e) {
+        if(!AttributeMod.config.modEnabled) return;
+
         OverlayElement.ALL.stream()
                 .filter(element -> element instanceof HudOverlayElement && element.shouldRender(null))
                 .map(element -> (HudOverlayElement) element)
@@ -48,6 +52,8 @@ public class Events {
 
     @SubscribeEvent @SuppressWarnings("unused")
     public void onDrawGuiBackground(GuiScreenEvent.BackgroundDrawnEvent e) {
+        if(!AttributeMod.config.modEnabled) return;
+
         OverlayElement.ALL.stream()
                 .filter(element -> element instanceof ChestOverlayElement && element.shouldRender(e.gui))
                 .map(element -> (ChestOverlayElement) element)
@@ -59,6 +65,8 @@ public class Events {
 
     @SubscribeEvent @SuppressWarnings("unused")
     public void onDrawGuiForeground(GuiScreenEvent.DrawScreenEvent e) {
+        if(!AttributeMod.config.modEnabled) return;
+
         OverlayElement.ALL.stream()
                 .filter(element -> element instanceof ChestOverlayElement && element.shouldRender(e.gui))
                 .map(element -> (ChestOverlayElement) element)
@@ -67,6 +75,8 @@ public class Events {
 
     @SubscribeEvent @SuppressWarnings("unused")
     public void onMouseInput(GuiScreenEvent.MouseInputEvent.Pre e) {
+        if(!AttributeMod.config.modEnabled) return;
+
         double mousePosX = (double) Mouse.getEventX() * e.gui.width / e.gui.mc.displayWidth;
         double mousePosY = (e.gui.height - (double) Mouse.getEventY() * e.gui.height / e.gui.mc.displayHeight);
 
@@ -87,12 +97,16 @@ public class Events {
 
     @SubscribeEvent @SuppressWarnings("unused")
     public void onWorldJoin(EntityJoinWorldEvent e) {
-        oneTimeMessage.onWorldJoin(e);
+        if(AttributeMod.config.modEnabled) {
+            oneTimeMessage.onWorldJoin(e);
+        }
     }
 
     @SubscribeEvent @SuppressWarnings("unused")
     public void onRenderToolTip(ItemTooltipEvent e) {
-        tooltipPriceDisplay.onRenderToolTip(e);
+        if(AttributeMod.config.modEnabled && AttributeMod.config.tooltipAttributePriceEnabled) {
+            tooltipPriceDisplay.onRenderToolTip(e);
+        }
     }
 
     @SubscribeEvent @SuppressWarnings("unused")
@@ -107,6 +121,8 @@ public class Events {
             AttributeMod.mc.displayGuiScreen(AttributeMod.config.gui());
         }
         // Checks for due tasks and executes them on a different thread.
-        AttributeMod.scheduler.executeTasksIfNeeded();
+        if(AttributeMod.config.modEnabled) {
+            AttributeMod.scheduler.executeTasksIfNeeded();
+        }
     }
 }

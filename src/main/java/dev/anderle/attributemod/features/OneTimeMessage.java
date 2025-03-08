@@ -70,15 +70,9 @@ public class OneTimeMessage {
     }
 
     private IChatComponent getNotWhitelistedMessage() {
-        return new ChatComponentText(
-        Constants.prefix + EnumChatFormatting.RED +
+        return new ChatComponentText(Constants.prefix + EnumChatFormatting.RED +
                 "Looks like you're not whitelisted to use this mod. Please use "
-                + EnumChatFormatting.GOLD + "/attributemod setkey <key> " + EnumChatFormatting.RED +
-                "to set or update your key. " + EnumChatFormatting.RED + "Please visit ")
-        .appendSibling(ChatUtils.chatLink("Kuudra Gang", "https://discord.gg/kuudra", EnumChatFormatting.RED))
-        .appendSibling(new ChatComponentText(
-        EnumChatFormatting.RED + ", and run " + EnumChatFormatting.GOLD + "/mod" +
-            EnumChatFormatting.RED + " there for instructions on how to obtain a key."
-        ));
+                + EnumChatFormatting.GOLD + "/attributemod" + EnumChatFormatting.RED +
+                ", to set or update your key.");
     }
 }

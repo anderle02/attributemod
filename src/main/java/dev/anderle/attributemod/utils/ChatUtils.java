@@ -28,7 +28,7 @@ public class ChatUtils {
             text.appendSibling(new ChatComponentText(
                     EnumChatFormatting.RED +
                     " If you have a free minute, please report this in "))
-                .appendSibling(chatLink("Kuudra Gang", "https://discord.gg/kuudra", EnumChatFormatting.RED)
+                .appendSibling(chatLink("Kuudra Gang", "https://kuudragang.anderle.dev", EnumChatFormatting.RED)
                     .appendSibling(new ChatComponentText(EnumChatFormatting.RED + ".")));
         }
         return text;
