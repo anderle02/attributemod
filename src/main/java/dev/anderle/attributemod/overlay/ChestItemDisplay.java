@@ -21,12 +21,9 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ChestItemDisplay extends ChestOverlayElement {
-    /** Pretty sure this is the longest possible item name. */
-    public static final int MAX_WIDTH = AttributeMod.mc.fontRendererObj.getStringWidth(
-            "888.8M  Vanquished Glowstone Gauntlet - [Arachno Resistance 10] [Blazing Resistance 10]");
-
     /** Stores which item is where, used to locate it when user interacts with the item list. */
     private final Map<Integer, Slot> itemSlotMapping = new HashMap<>();
     /** Index of the item string the user is currently hovering over. */
@@ -106,7 +103,7 @@ public class ChestItemDisplay extends ChestOverlayElement {
                 .map(item -> (long) item.getDetailedPrice().getEstimate())
                 .reduce(Long::sum).orElse(0L);
 
-        ArrayList<String> newContent = getItemStrings(items);
+        ArrayList<String> newContent = new ArrayList<>(getItemStrings(items));
 
         newContent.add(0, EnumChatFormatting.DARK_RED + "Total Value " + EnumChatFormatting.YELLOW +
                 "-" + EnumChatFormatting.GOLD + " " + Helper.formatNumber(totalValue) + EnumChatFormatting.GRAY +
@@ -144,8 +141,19 @@ public class ChestItemDisplay extends ChestOverlayElement {
     public Dimension getSize() {
         // Height = (items + top line + items remaining line) * (line height + 1 space)
         int height = (AttributeMod.config.chestOverlayItemsToShow + 2) * (AttributeMod.mc.fontRendererObj.FONT_HEIGHT + 1);
+        String longestText;
 
-        return new Dimension((int) (MAX_WIDTH * scale / 100), (int) (height * scale / 100));
+        switch(AttributeMod.config.overlayStyle) { // Pretty sure these are the longest possible strings for each overlay style
+            case 0: longestText = "888.8M  Vanquished Glowstone Gauntlet"; break;
+            case 1:
+            case 2: longestText = "888.8M  DOM 10, VET 10 Vanquished Glowstone Gauntlet"; break;
+            default: longestText = "888.8M  Vanquished Glowstone Gauntlet - [Arachno Resistance 10] [Blazing Resistance 10]";
+        }
+
+        return new Dimension(
+                (int) (AttributeMod.mc.fontRendererObj.getStringWidth(longestText) * scale / 100),
+                (int) (height * scale / 100)
+        );
     }
 
     @Override
@@ -191,26 +199,46 @@ public class ChestItemDisplay extends ChestOverlayElement {
         GL11.glPopMatrix();
     }
 
-    private ArrayList<String> getItemStrings(List<ItemWithAttributes> items) {
-        ArrayList<String> toDisplay = new ArrayList<>();
+    private List<String> getItemStrings(List<ItemWithAttributes> items) {
+        return items.stream().map(i -> getString(
+                i.getAttributes(), i.getAttributeLevels(), i.getDisplayName(), i.getDetailedPrice().getEstimate()
+        )).collect(Collectors.toList());
+    }
 
-        for(ItemWithAttributes item : items) {
-            ItemWithAttributes.Evaluation price = item.getDetailedPrice();
-            List<Attribute> attributeNames = item.getAttributes();
-            List<Integer> attributeLevels = item.getAttributeLevels();
-            String itemName = item.getDisplayName();
-
-            String displayString = EnumChatFormatting.GOLD + Helper.formatNumber(price.getEstimate()) + " "
-                    + EnumChatFormatting.YELLOW + " " + itemName + " - " + EnumChatFormatting.GREEN + "["
-                    + EnumChatFormatting.AQUA + attributeNames.get(0).getName() + " " + attributeLevels.get(0)
-                    + EnumChatFormatting.GREEN + "]";
-
-            if(item.hasTwoAttributes()) displayString += " [" + EnumChatFormatting.AQUA + attributeNames.get(1).getName()
-                    + " " + attributeLevels.get(1) + EnumChatFormatting.GREEN + "]";
-
-            toDisplay.add(displayString);
+    /** Get a nicely formatted string for every single overlay style. (took a while...) */
+    private String getString(List<Attribute> attributes, List<Integer> attributeLevels, String itemName, int estimate) {
+        String displayString = EnumChatFormatting.GOLD + Helper.formatNumber(estimate) + " ";
+        switch(AttributeMod.config.overlayStyle) {
+            case 1:
+                if(attributes.get(0).isPopular()) displayString += " " + EnumChatFormatting.AQUA + attributes.get(0).getShortName() + " " + EnumChatFormatting.GREEN + attributeLevels.get(0);
+                if(attributes.size() == 2) {
+                    if(attributes.get(0).isPopular() && attributes.get(1).isPopular()) displayString += EnumChatFormatting.YELLOW + ",";
+                    if(attributes.get(1).isPopular()) displayString += " " + EnumChatFormatting.AQUA + attributes.get(1).getShortName() + " " + EnumChatFormatting.GREEN + attributeLevels.get(1);
+                }
+                displayString += EnumChatFormatting.YELLOW + " " + itemName;
+                break;
+            case 2:
+                displayString += " " + EnumChatFormatting.AQUA + attributes.get(0).getShortName() + " " + EnumChatFormatting.GREEN + attributeLevels.get(0);
+                if(attributes.size() == 2) displayString += EnumChatFormatting.YELLOW + ", " + EnumChatFormatting.AQUA + attributes.get(1).getShortName() + " " + EnumChatFormatting.GREEN + attributeLevels.get(1);
+                displayString += EnumChatFormatting.YELLOW + " " + itemName;
+                break;
+            case 3:
+                displayString += EnumChatFormatting.YELLOW + " " + itemName;
+                if(attributes.get(0).isPopular()) displayString += " - " + EnumChatFormatting.GREEN + "[" + EnumChatFormatting.AQUA + attributes.get(0).getName() + " " + attributeLevels.get(0) + EnumChatFormatting.GREEN + "]";
+                if(attributes.size() == 2) {
+                    if(!attributes.get(0).isPopular() && attributes.get(1).isPopular()) displayString += " - " + EnumChatFormatting.GREEN + "[" + EnumChatFormatting.AQUA + attributes.get(1).getName() + " " + attributeLevels.get(1) + EnumChatFormatting.GREEN + "]";
+                    if(attributes.get(0).isPopular() && attributes.get(1).isPopular()) displayString += " [" + EnumChatFormatting.AQUA + attributes.get(1).getName() + " " + attributeLevels.get(1) + EnumChatFormatting.GREEN + "]";
+                }
+                break;
+            case 4:
+                displayString += EnumChatFormatting.YELLOW + " " + itemName;
+                displayString += " - " + EnumChatFormatting.GREEN + "[" + EnumChatFormatting.AQUA + attributes.get(0).getName() + " " + attributeLevels.get(0) + EnumChatFormatting.GREEN + "]";
+                if(attributes.size() == 2) displayString += " [" + EnumChatFormatting.AQUA + attributes.get(1).getName() + " " + attributeLevels.get(1) + EnumChatFormatting.GREEN + "]";
+                break;
+            default:
+                displayString += EnumChatFormatting.YELLOW + " " + itemName;
         }
-        return toDisplay;
+        return displayString;
     }
 
     private String highlightItemString(String str) {

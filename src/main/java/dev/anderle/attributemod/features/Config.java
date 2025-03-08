@@ -49,6 +49,19 @@ public class Config extends Vigilant {
         }
     }
 
+    @Property(
+            type = PropertyType.SELECTOR, name = "Overlay Style", category = "Overlays",
+            description = "Choose the style of your chest and reward chest overlays, so it fits better on your screen.",
+            options = {
+                    "item names only (SMALLEST)",
+                    "short attribute names, only popular attributes",
+                    "short attribute names, all attributes",
+                    "long attribute names, only popular attributes",
+                    "long attribute names, all attributes (LARGEST)"
+            }
+    )
+    public int overlayStyle = 4;
+
     /** Chest Item Display */
 
     @Property(type = PropertyType.SWITCH, name = "Chest Overlay", category = "Overlays",
@@ -117,7 +130,7 @@ public class Config extends Vigilant {
             description = "Download the latest version of this Mod. Your version is " + AttributeMod.VERSION + "!")
     public void openDownloadLink() throws URISyntaxException, IOException {
         if (Desktop.isDesktopSupported()) { // Use my own page so no mod update is needed if the invite link changes.
-            Desktop.getDesktop().browse(new URI("https://kuudragang.anderle.dev/releases/latest"));
+            Desktop.getDesktop().browse(new URI("https://attributemod.anderle.dev/releases/latest"));
         }
     }
 
