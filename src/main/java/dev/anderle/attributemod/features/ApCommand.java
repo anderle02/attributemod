@@ -3,6 +3,7 @@ package dev.anderle.attributemod.features;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import dev.anderle.attributemod.utils.Attribute;
 import dev.anderle.attributemod.utils.Constants;
 import dev.anderle.attributemod.AttributeMod;
 import dev.anderle.attributemod.utils.Helper;
@@ -19,7 +20,9 @@ import org.apache.http.client.HttpResponseException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ApCommand extends CommandBase {
 
@@ -79,7 +82,7 @@ public class ApCommand extends CommandBase {
             return;
         }
         // extract attributes with levels and show the response
-        String firstAttribute = Helper.getAttribute(args[0]);
+        String firstAttribute = Attribute.getBestMatchWithoutSpace(args[0]);
         switch(args.length) {
             case 1: {
                 showSinglePrices(sender, firstAttribute, 1, null);
@@ -87,16 +90,16 @@ public class ApCommand extends CommandBase {
             }
             case 2: {
                 if(NumberUtils.isNumber(args[1])) showSinglePrices(sender, firstAttribute, parseInt(args[1]), null); // a1 l1
-                else showCombinationPrices(sender, firstAttribute, 0, Helper.getAttribute(args[1]), 0, null); // a1 a2
+                else showCombinationPrices(sender, firstAttribute, 0, Attribute.getBestMatchWithoutSpace(args[1]), 0, null); // a1 a2
                 return;
             }
             case 3: {
                 if(NumberUtils.isNumber(args[2])) {
                     if(NumberUtils.isNumber(args[1])) wrongUsage(sender);
-                    else showCombinationPrices(sender, firstAttribute, 0, Helper.getAttribute(args[1]), parseInt(args[2]), null); // a1 a2 l2
+                    else showCombinationPrices(sender, firstAttribute, 0, Attribute.getBestMatchWithoutSpace(args[1]), parseInt(args[2]), null); // a1 a2 l2
                 } else {
                     if(!NumberUtils.isNumber(args[1])) wrongUsage(sender);
-                    else showCombinationPrices(sender, firstAttribute, parseInt(args[1]), Helper.getAttribute(args[2]), 0, null); // a1 l1 a2
+                    else showCombinationPrices(sender, firstAttribute, parseInt(args[1]), Attribute.getBestMatchWithoutSpace(args[2]), 0, null); // a1 l1 a2
                 }
                 return;
             }
@@ -104,7 +107,7 @@ public class ApCommand extends CommandBase {
                 if(!NumberUtils.isNumber(args[1]) || NumberUtils.isNumber(args[2]) || !NumberUtils.isNumber(args[3])) {
                     wrongUsage(sender);
                 } else {
-                    showCombinationPrices(sender, firstAttribute, parseInt(args[1]), Helper.getAttribute(args[2]), parseInt(args[3]), null); // a1 l1 a2 l2
+                    showCombinationPrices(sender, firstAttribute, parseInt(args[1]), Attribute.getBestMatchWithoutSpace(args[2]), parseInt(args[3]), null); // a1 l1 a2 l2
                 }
                 return;
             }
@@ -114,19 +117,15 @@ public class ApCommand extends CommandBase {
 
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
-        List<String> options = new ArrayList<>();
-        if(args.length < 5) for(String attribute : Constants.supportedAttributes) {
-            if(attribute.toLowerCase().startsWith(args[args.length - 1].toLowerCase())) {
-                options.add(attribute.replaceAll(" ", ""));
-            }
-        }
-        return options;
+        if(args.length >= 5) return new ArrayList<>();
+
+        return Arrays.stream(Attribute.values())
+                .map(Attribute::getNameWithoutSpace)
+                .filter(a -> a.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Handle processing if one attribute was entered.
-     * If no level was entered, pass "1" as argument.
-     */
+    /** Handle processing if one attribute was entered. If no level was entered, pass "1" as argument. */
     private void showSinglePrices(ICommandSender sender, String attribute, int level, String appearance) {
         float level_ = Helper.withLimits(level, 10, 1);
 
@@ -144,9 +143,7 @@ public class ApCommand extends CommandBase {
                 });
     }
 
-    /**
-     * Handle processing if two attributes were entered (with or without level).
-     */
+    /** Handle processing if two attributes were entered (with or without level). */
     private void showCombinationPrices(ICommandSender sender, String first, int firstLevel, String second, int secondLevel, String appearance) {
         int firstLevel_ = Helper.withLimits(firstLevel, 10, 0);
         int secondLevel_ = Helper.withLimits(secondLevel, 10, 0);
@@ -167,9 +164,7 @@ public class ApCommand extends CommandBase {
         });
     }
 
-    /**
-     * Send a chat message to the sender that the command usage is wrong.
-     */
+    /** Send a chat message to the sender that the command usage is wrong. */
     private void wrongUsage(ICommandSender sender) {
         sender.addChatMessage(new ChatComponentText(getCommandUsage(sender)));
     }

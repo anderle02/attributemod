@@ -2,34 +2,13 @@ package dev.anderle.attributemod.utils;
 
 import net.minecraft.util.EnumChatFormatting;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class Constants {
+    // Note: Attributes moved to `Attribute` enum.
+
     public static final String prefix = EnumChatFormatting.GOLD + "[" + EnumChatFormatting.YELLOW + "AttributeMod" + EnumChatFormatting.GOLD + "] " + EnumChatFormatting.RESET;
     public static final String[] itemIdPartsToIgnore = {
             "HOT_", "BURNING_", "FIERY_", "INFERNAL_"
     };
-    public static final String[] supportedAttributes = {
-            "Arachno", "AttackSpeed", "Combo", "Elite", "Ignition", "LifeRecovery",
-            "MidasTouch", "Undead", "ManaSteal", "Ender", "ArachnoResistance",
-            "BlazingResistance", "Experience", "Speed", "UndeadResistance", "Breeze",
-            "Lifeline", "LifeRegeneration", "ManaPool", "Dominance", "EnderResistance",
-            "Vitality", "ManaRegeneration", "Veteran", "BlazingFortune", "Blazing",
-            "FishingExperience", "DoubleHook", "Fisherman", "FishingSpeed", "Hunter",
-            "TrophyHunter", "Infection", "MagicFind", "Fortitude", "Warrior", "Deadeye"
-    };
-
-    public static final Map<String, String> aliases = new HashMap<>();
-    static {
-        aliases.put("br", "Breeze"); aliases.put("dom", "Dominance"); aliases.put("er", "EnderResistance");
-        aliases.put("exp", "Experience"); aliases.put("fort", "Fortitude"); aliases.put("lr", "LifeRegeneration");
-        aliases.put("ll", "Lifeline"); aliases.put("mf", "MagicFind"); aliases.put("mp", "ManaPool");
-        aliases.put("mr", "ManaRegeneration"); aliases.put("sp", "Speed"); aliases.put("ur", "UndeadResistance");
-        aliases.put("vet", "Veteran"); aliases.put("vit", "Vitality"); aliases.put("bf", "BlazingFortune");
-        aliases.put("fe", "FishingExperience"); aliases.put("dh", "DoubleHook"); aliases.put("fs", "FishingSpeed");
-        aliases.put("th", "TrophyHunter"); aliases.put("as", "AttackSpeed"); aliases.put("ms", "ManaSteal");
-    }
 
     public static final String[] supportedItems = {
             "ATTRIBUTE_SHARD",

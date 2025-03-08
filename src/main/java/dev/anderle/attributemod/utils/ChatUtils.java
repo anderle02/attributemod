@@ -2,7 +2,6 @@ package dev.anderle.attributemod.utils;
 
 import net.minecraft.client.gui.ChatLine;
 import net.minecraft.client.gui.GuiNewChat;
-import net.minecraft.command.ICommandSender;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.event.HoverEvent;
 import net.minecraft.util.ChatComponentText;
@@ -99,17 +98,5 @@ public class ChatUtils {
             }
         }
         return comp;
-    }
-
-    /**
-     * Send a chat message to the sender that the entered number is invalid.
-     */
-    public static void badNumber(ICommandSender sender, int from, int to) {
-        sender.addChatMessage(new ChatComponentText(
-            Constants.prefix + EnumChatFormatting.RED
-            + "Please enter a valid number between " + EnumChatFormatting.DARK_RED
-            + from + EnumChatFormatting.RED + " and " + EnumChatFormatting.DARK_RED
-            + to + EnumChatFormatting.RED + "."
-        ));
     }
 }

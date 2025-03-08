@@ -1,6 +1,7 @@
 package dev.anderle.attributemod.overlay;
 
 import dev.anderle.attributemod.AttributeMod;
+import dev.anderle.attributemod.utils.Attribute;
 import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.ItemWithAttributes;
 import net.minecraft.client.audio.PositionedSoundRecord;
@@ -94,16 +95,16 @@ public class ChestItemDisplay extends ChestOverlayElement {
     @Override
     public void updateData(GuiScreen screen) {
         List<Slot> allSlots = ((GuiChest) screen).inventorySlots.inventorySlots;
-        ItemWithAttributes[] items = ItemWithAttributes.getValidItems(allSlots.subList(0, allSlots.size() - 36));
+        List<ItemWithAttributes> items = ItemWithAttributes.fromContainer(allSlots.subList(0, allSlots.size() - 36));
 
         itemSlotMapping.clear();
-        for(int i = 0; i < items.length; i++) {
-            itemSlotMapping.put(i, items[i].getSlot());
+        for(int i = 0; i < items.size(); i++) {
+            itemSlotMapping.put(i, items.get(i).getSlot());
         }
 
-        long totalValue = Arrays.stream(items).map((ItemWithAttributes item) ->
-                (long) item.getDetailedPrice().getEstimate()
-        ).reduce(Long::sum).orElse(0L);
+        long totalValue = items.stream()
+                .map(item -> (long) item.getDetailedPrice().getEstimate())
+                .reduce(Long::sum).orElse(0L);
 
         ArrayList<String> newContent = getItemStrings(items);
 
@@ -190,22 +191,22 @@ public class ChestItemDisplay extends ChestOverlayElement {
         GL11.glPopMatrix();
     }
 
-    private ArrayList<String> getItemStrings(ItemWithAttributes[] items) {
+    private ArrayList<String> getItemStrings(List<ItemWithAttributes> items) {
         ArrayList<String> toDisplay = new ArrayList<>();
 
         for(ItemWithAttributes item : items) {
             ItemWithAttributes.Evaluation price = item.getDetailedPrice();
-            String[] attributeNames = item.getAttributeNames();
-            Integer[] attributeLevels = item.getAttributeLevels();
+            List<Attribute> attributeNames = item.getAttributes();
+            List<Integer> attributeLevels = item.getAttributeLevels();
             String itemName = item.getDisplayName();
 
             String displayString = EnumChatFormatting.GOLD + Helper.formatNumber(price.getEstimate()) + " "
                     + EnumChatFormatting.YELLOW + " " + itemName + " - " + EnumChatFormatting.GREEN + "["
-                    + EnumChatFormatting.AQUA + attributeNames[0] + " " + attributeLevels[0]
+                    + EnumChatFormatting.AQUA + attributeNames.get(0).getName() + " " + attributeLevels.get(0)
                     + EnumChatFormatting.GREEN + "]";
 
-            if(attributeNames.length == 2) displayString += " [" + EnumChatFormatting.AQUA + attributeNames[1]
-                    + " " + attributeLevels[1] + EnumChatFormatting.GREEN + "]";
+            if(item.hasTwoAttributes()) displayString += " [" + EnumChatFormatting.AQUA + attributeNames.get(1).getName()
+                    + " " + attributeLevels.get(1) + EnumChatFormatting.GREEN + "]";
 
             toDisplay.add(displayString);
         }

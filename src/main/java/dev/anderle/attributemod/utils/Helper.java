@@ -4,11 +4,11 @@ import com.google.gson.*;
 import dev.anderle.attributemod.AttributeMod;
 import net.minecraft.nbt.*;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.WordUtils;
 
 import java.text.DecimalFormat;
 
 public class Helper {
+    /** Nicely format any number. */
     public static String formatNumber(double number) {
         DecimalFormat df = new DecimalFormat("###.#");
 
@@ -18,18 +18,7 @@ public class Helper {
         else return df.format(number / 1e9) + "B";
     }
 
-    /**
-     * Convert attribute names from nbt data to the format that I use.
-     */
-    public static String formatAttribute(String attribute) {
-        String result = WordUtils.capitalize(attribute.replaceAll("_", " "));
-        if(result.equals("Mending")) result = "Vitality";
-        return result;
-    }
-
-    /**
-     * Get the most similar string to a given input. Uses Levenshtein Distance score.
-     */
+    /** Get the most similar string to a given input. Uses Levenshtein Distance score. */
     public static String getBestMatch(String input, String[] toCompare) {
         if(toCompare.length == 0) return input;
         else input = input.toLowerCase();
@@ -45,15 +34,7 @@ public class Helper {
         return bestMatch;
     }
 
-    /**
-     * Get the most similar attribute from the list of supported attributes.
-     */
-    public static String getAttribute(String input) {
-        return Constants.aliases.containsKey(input)
-                ? Constants.aliases.get(input)
-                : getBestMatch(input, Constants.supportedAttributes);
-    }
-
+    /** Replaces all underscores with spaces. Then capitalizes every word. */
     public static String itemIdToName(String id, boolean withSpaces) {
         StringBuilder result = new StringBuilder();
         for(String part : id.split("_")) {
@@ -63,17 +44,17 @@ public class Helper {
         return result.toString().trim();
     }
 
-    /**
-     * Add a url encoded space (%20) between words of an attribute.
-     * For example, "ManaPool" becomes "Mana%20Pool".
-     */
+    /** Replaces all spaces with underscores. Then makes the string uppercase. */
+    public static String itemNameToId(String string) {
+        return string.replaceAll("(.)([A-Z])", "$1_$2").toUpperCase();
+    }
+
+    /** Add a url encoded space (%20) between words of an attribute. For example, "ManaPool" becomes "Mana%20Pool". */
     public static String urlEncodeAttribute(String string) {
         return string.replaceAll("(.)([A-Z])", "$1%20$2");
     }
 
-    /**
-     * Remove parts of the item ID, that don't affect the prices of the item's attribute.
-     */
+    /** Remove parts of the item ID, that don't affect the prices of the item's attribute. */
     public static String removeExtraItemIdParts(String itemId) {
         for(String part : Constants.itemIdPartsToIgnore) {
             if(itemId.contains(part)) return itemId.replace(part, "");
@@ -81,18 +62,14 @@ public class Helper {
         return itemId;
     }
 
-    /**
-     *  Get player UUID dynamically.
-     */
+    /** Get player UUID dynamically. */
     public static String getPlayerUUID() {
         return AttributeMod.mc.thePlayer == null
                 ? AttributeMod.mc.getSession().getPlayerID()
                 : AttributeMod.mc.thePlayer.getUniqueID().toString().replaceAll("-", "");
     }
 
-    /**
-     * Convert NBT tag to JSON format.
-     */
+    /** Convert NBT tag to JSON format. */
     public static JsonObject convertNBTToJson(NBTTagCompound nbtTag) {
         JsonObject jsonObject = new JsonObject();
 
@@ -104,9 +81,7 @@ public class Helper {
         return jsonObject;
     }
 
-    /**
-     * Convert NBT tag to JSON format.
-     */
+    /** Recursively convert any NBT data to JSON. */
     private static JsonElement convertTagToJsonElement(NBTBase nbtTag) {
         if (nbtTag instanceof NBTTagCompound) {
             return convertNBTToJson((NBTTagCompound) nbtTag);
@@ -127,15 +102,11 @@ public class Helper {
         }
     }
 
-    /**
-     * Ensures the value x is inside max and min.
-     */
+    /** Ensures the value x is inside max and min. */
     public static double withLimits(double value, double max, double min) {
         return Math.max(Math.min(value, max), min);
     }
-    /**
-     * Ensures the value x is inside max and min.
-     */
+    /** Ensures the value x is inside max and min. */
     public static int withLimits(int value, int max, int min) {
         return Math.max(Math.min(value, max), min);
     }
