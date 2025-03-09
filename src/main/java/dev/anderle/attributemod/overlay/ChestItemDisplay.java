@@ -199,6 +199,10 @@ public class ChestItemDisplay extends ChestOverlayElement {
         GL11.glPopMatrix();
     }
 
+    public void resetHoveredItem() {
+        hoveredItem = -1;
+    }
+
     private List<String> getItemStrings(List<ItemWithAttributes> items) {
         return items.stream().map(i -> getString(
                 i.getAttributes(), i.getAttributeLevels(), i.getDisplayName(), i.getDetailedPrice().getEstimate()

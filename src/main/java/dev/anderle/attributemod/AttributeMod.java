@@ -17,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.util.Arrays;
 
-@Mod(modid = "attributemod", useMetadata = true, clientSideOnly = true)
+@Mod(modid = AttributeMod.MODID, useMetadata = true, clientSideOnly = true)
 public class AttributeMod {
     public static final String NAME = "Attribute Mod";
     public static final String MODID = "attributemod";

@@ -1,6 +1,7 @@
 package dev.anderle.attributemod;
 
 import dev.anderle.attributemod.features.*;
+import dev.anderle.attributemod.overlay.ChestItemDisplay;
 import dev.anderle.attributemod.overlay.ChestOverlayElement;
 import dev.anderle.attributemod.overlay.HudOverlayElement;
 import dev.anderle.attributemod.overlay.OverlayElement;
@@ -81,16 +82,22 @@ public class Events {
         double mousePosY = (e.gui.height - (double) Mouse.getEventY() * e.gui.height / e.gui.mc.displayHeight);
 
         OverlayElement.ALL.stream()
-                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender(e.gui) && element.isInside(mousePosX, mousePosY))
+                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender(e.gui))
                 .map(element -> (ChestOverlayElement) element)
                 .forEach(element -> {
-                    if(Mouse.getEventButton() == 0 && Mouse.isButtonDown(0)) {
-                        element.onClick(e, mousePosX, mousePosY);
-                    } else if(Mouse.getEventDWheel() != 0) {
-                        element.onScroll((GuiChest) e.gui, Mouse.getEventDWheel() < 0);
-                        element.onHover((GuiChest) e.gui, mousePosX, mousePosY);
+                    if(element.isInside(mousePosX, mousePosY)) {
+                        if(Mouse.getEventButton() == 0 && Mouse.isButtonDown(0)) {
+                            element.onClick(e, mousePosX, mousePosY);
+                        } else if(Mouse.getEventDWheel() != 0) {
+                            element.onScroll((GuiChest) e.gui, Mouse.getEventDWheel() < 0);
+                            element.onHover((GuiChest) e.gui, mousePosX, mousePosY);
+                        } else {
+                            element.onHover((GuiChest) e.gui, mousePosX, mousePosY);
+                        }
                     } else {
-                        element.onHover((GuiChest) e.gui, mousePosX, mousePosY);
+                        if(element instanceof ChestItemDisplay) {
+                            ((ChestItemDisplay) element).resetHoveredItem();
+                        }
                     }
                 });
     }
