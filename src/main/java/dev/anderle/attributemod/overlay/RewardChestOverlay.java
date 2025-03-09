@@ -24,8 +24,10 @@ import java.util.Collection;
 import java.util.List;
 
 public class RewardChestOverlay extends ChestOverlayElement {
+    // Didn't take the longest possible width so it's not that wide.
+    // Doesn't really matter for this overlay because it's not clickable anyway.
     public static final int MAX_WIDTH = AttributeMod.mc.fontRendererObj.getStringWidth(
-            "+ 888.8M Crimson Chestplate [Arachno Resistance 5] [Blazing Resistance 4]");
+            "+ 888.8M Crimson Chestplate [Veteran 5] [Dominance 4]");
 
     public RewardChestOverlay() {
         super("Kuudra Reward Chest Overlay", 0, Color.orange);
@@ -33,7 +35,6 @@ public class RewardChestOverlay extends ChestOverlayElement {
 
     @Override
     public void onGuiOpen(GuiChest chest) {
-        content.clear();
         new Thread(() -> {
             try {
                 Thread.sleep(200);
@@ -140,6 +141,7 @@ public class RewardChestOverlay extends ChestOverlayElement {
 
         AttributeMod.backend.sendPostRequest("/kuudrachest", "&tier=" + getKuudraTier(), chestItems.toString(),
                 (String response) -> {
+                    content.clear();
                     for(JsonElement line : new JsonParser().parse(response).getAsJsonArray()) {
                         content.add(line.getAsString());
                     }
