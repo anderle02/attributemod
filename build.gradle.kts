@@ -72,10 +72,9 @@ dependencies {
     runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.2.1")
 
     // Add Vigilance dependency. Used for the config GUI.
-    implementation("gg.essential:vigilance:306")
-
-    // Add UniversalCraft dependency. Needed for Vigilance.
-    modImplementation("gg.essential:universalcraft-1.8.9-forge:373")
+    shadowImpl("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22")
+    shadowImpl("gg.essential:vigilance:306")
+    shadowImpl("gg.essential:universalcraft-1.8.9-forge:373")
 }
 
 // Tasks:
