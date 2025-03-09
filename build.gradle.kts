@@ -71,10 +71,9 @@ dependencies {
     // Add DevAuth dependency, used to develop the mod with a real minecraft account.
     runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.2.1")
 
-    // Add Vigilance dependency. Used for the config GUI.
-    shadowImpl("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22")
-    shadowImpl("gg.essential:vigilance:306")
-    shadowImpl("gg.essential:universalcraft-1.8.9-forge:373")
+    // Add Essential as dependency. Used for the config GUI.
+    compileOnly("gg.essential:essential-1.8.9-forge:+") // The actual essential dependency.
+    shadowImpl("gg.essential:loader-launchwrapper:+") // Will load essential at runtime (if not loaded by another mod).
 }
 
 // Tasks:
@@ -88,6 +87,7 @@ tasks.withType(org.gradle.jvm.tasks.Jar::class) {
     manifest.attributes.run {
         this["FMLCorePluginContainsFMLMod"] = "true"
         this["ForceLoadAsMod"] = "true"
+        this["TweakClass"] = "gg.essential.loader.stage0.EssentialSetupTweaker"
     }
 }
 
@@ -126,10 +126,6 @@ tasks.shadowJar {
 
     // If you want to include other dependencies and shadow them, you can relocate them in here
     fun relocate(name: String) = relocate(name, "$baseGroup.deps.$name")
-
-    relocate("gg.essential.vigilance")
-    relocate("gg.essential.elementa")
-    relocate("gg.essential.universal")
 }
 
 tasks.assemble.get().dependsOn(tasks.remapJar)
