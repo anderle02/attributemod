@@ -36,6 +36,13 @@ public class ItemWithAttributes {
         } else {
             secondAttribute = attribute;
             secondLevel = level;
+
+            // Make the popular attribute come first.
+            if(!firstAttribute.isPopular() && secondAttribute.isPopular()) {
+                Attribute temp = firstAttribute;
+                firstAttribute = secondAttribute;
+                secondAttribute = temp;
+            }
         }
     }
 

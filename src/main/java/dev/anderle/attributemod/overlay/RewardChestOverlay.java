@@ -20,6 +20,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -28,6 +29,9 @@ public class RewardChestOverlay extends ChestOverlayElement {
     // Doesn't really matter for this overlay because it's not clickable anyway.
     public static final int MAX_WIDTH = AttributeMod.mc.fontRendererObj.getStringWidth(
             "+ 888.8M Crimson Chestplate [Veteran 5] [Dominance 4]");
+
+    /** The strings to render with next render tick. */
+    private final ArrayList<String> content = new ArrayList<>();
 
     public RewardChestOverlay() {
         super("Kuudra Reward Chest Overlay", 0, Color.orange);

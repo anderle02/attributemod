@@ -19,7 +19,6 @@ public abstract class OverlayElement {
     /** Initialize all overlays. */
     public static void initAll() { new ChestItemDisplay(); new RewardChestOverlay(); }
 
-    protected ArrayList<String> content = new ArrayList<>();
     protected Dimension size = null;
     protected Point position = null;
     protected double scale = 100;

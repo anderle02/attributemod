@@ -22,10 +22,19 @@ import java.awt.datatransfer.StringSelection;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ChestItemDisplay extends ChestOverlayElement {
     /** Stores which item is where, used to locate it when user interacts with the item list. */
     private final Map<Integer, Slot> itemSlotMapping = new HashMap<>();
+
+    /** The strings to render with next render tick. Has to be split in columns to be able to be properly aligned. */
+    private List<List<String>> content = new ArrayList<>();
+    /** Sums um max widths of each column, to know at which x to render the column. */
+    private List<Integer> xOffsets = new ArrayList<>();
+    /** Current total value of the chest items. */
+    private long totalValue = 0;
+
     /** Index of the item string the user is currently hovering over. */
     private int hoveredItem = -1;
     private int scrollOffset = 0;
@@ -61,6 +70,8 @@ public class ChestItemDisplay extends ChestOverlayElement {
 
     @Override
     public void onHover(GuiChest chest, double mouseX, double mouseY) {
+        if(itemSlotMapping.isEmpty()) return; // Don't try to calculate hovered item if there are no items.
+
         // Font height and width need to be scaled by the scale used for rendering.
         double scaledLineHeight = (chest.mc.fontRendererObj.FONT_HEIGHT + 1) * scale / 100;
         int focusedLine = (int) Math.floor((mouseY - position.y) / scaledLineHeight);
@@ -75,6 +86,8 @@ public class ChestItemDisplay extends ChestOverlayElement {
 
     @Override
     public void onScroll(GuiChest chest, boolean direction) {
+        if(itemSlotMapping.isEmpty()) return; // Don't try to calculate scroll offset if there are no items.
+
         if(direction && scrollOffset + AttributeMod.config.chestOverlayItemsToShow < itemSlotMapping.size()) {
             scrollOffset++;
         } else if(!direction && scrollOffset > 0) {
@@ -99,17 +112,15 @@ public class ChestItemDisplay extends ChestOverlayElement {
             itemSlotMapping.put(i, items.get(i).getSlot());
         }
 
-        long totalValue = items.stream()
+        content = getItemStrings(items);
+        xOffsets = getColumnOffsets(content);
+        totalValue = items.stream()
                 .map(item -> (long) item.getDetailedPrice().getEstimate())
                 .reduce(Long::sum).orElse(0L);
 
-        ArrayList<String> newContent = new ArrayList<>(getItemStrings(items));
-
-        newContent.add(0, EnumChatFormatting.DARK_RED + "Total Value " + EnumChatFormatting.YELLOW +
-                "-" + EnumChatFormatting.GOLD + " " + Helper.formatNumber(totalValue) + EnumChatFormatting.GRAY +
-                " [Copy]");
-
-        content = newContent;
+        if(scrollOffset > 0 && scrollOffset > itemSlotMapping.size() - AttributeMod.config.chestOverlayItemsToShow) {
+            scrollOffset--; // To avoid showing "-1" at the end when an item was removed.
+        }
     }
 
     @Override
@@ -165,30 +176,29 @@ public class ChestItemDisplay extends ChestOverlayElement {
     public void renderOverlay(GuiScreen screen) {
         if (itemSlotMapping.isEmpty()) return;
 
-        int itemsAbove = scrollOffset;
         int itemsBelow = content.size() > AttributeMod.config.chestOverlayItemsToShow
-                ? content.size() - 1 - scrollOffset - AttributeMod.config.chestOverlayItemsToShow
+                ? content.size() - scrollOffset - AttributeMod.config.chestOverlayItemsToShow
                 : 0;
 
         GL11.glPushMatrix();
         GL11.glScaled(scale / 100, scale / 100, 1);
 
-        String firstLine = (itemsAbove != 0 ? EnumChatFormatting.YELLOW + "^ " + itemsAbove + " "  : "")
-                + (copyButtonFocused ? content.get(0).replace("[Copy]", EnumChatFormatting.YELLOW + "[Copy]" + EnumChatFormatting.GRAY) : content.get(0));
-
-        screen.drawString(screen.mc.fontRendererObj, firstLine,
-                (itemsAbove == 0 ? screen.mc.fontRendererObj.getStringWidth("^ 0 ") : 0) + (int) (position.x * 100 / scale),
-                (int) (position.y * 100 / scale),
-                0xffffffff);
+        screen.drawString(screen.mc.fontRendererObj, getFirstLine(), (int) (position.x * 100 / scale), (int) (position.y * 100 / scale), 0xffffffff);
 
         int i = 1;
         for (; i <= AttributeMod.config.chestOverlayItemsToShow && i + scrollOffset <= itemSlotMapping.size(); i++) {
-            screen.drawString(
-                    screen.mc.fontRendererObj,
-                    i + scrollOffset == (hoveredItem + 1) ? highlightItemString(content.get(i + scrollOffset)) : content.get(i + scrollOffset),
-                    (int) (position.x * 100 / scale), (int) (position.y * 100 / scale) + i * (screen.mc.fontRendererObj.FONT_HEIGHT + 1),
-                    0xffffffff
-            );
+            List<String> parts = i + scrollOffset == hoveredItem + 1
+                    ? highlightItemStrings(content.get(i + scrollOffset - 1))
+                    : content.get(i + scrollOffset - 1);
+
+            for(int j = 0; j < parts.size(); j++) {
+                screen.drawString(
+                        screen.mc.fontRendererObj, parts.get(j),
+                        (int) (position.x * 100 / scale) + xOffsets.get(j),
+                        (int) (position.y * 100 / scale) + i * (screen.mc.fontRendererObj.FONT_HEIGHT + 1),
+                        0xffffffff
+                );
+            }
         }
 
         if(itemsBelow != 0) screen.drawString(screen.mc.fontRendererObj,
@@ -203,69 +213,104 @@ public class ChestItemDisplay extends ChestOverlayElement {
         hoveredItem = -1;
     }
 
-    private List<String> getItemStrings(List<ItemWithAttributes> items) {
-        return items.stream().map(i -> getString(
-                i.getAttributes(), i.getAttributeLevels(), i.getDisplayName(), i.getDetailedPrice().getEstimate()
-        )).collect(Collectors.toList());
-    }
-
-    /** Get a nicely formatted string for every single overlay style. (took a while...) */
-    private String getString(List<Attribute> attributes, List<Integer> attributeLevels, String itemName, int estimate) {
-        String displayString = EnumChatFormatting.GOLD + Helper.formatNumber(estimate) + " ";
-        switch(AttributeMod.config.overlayStyle) {
-            case 1:
-                if(attributes.get(0).isPopular()) displayString += " " + EnumChatFormatting.AQUA + attributes.get(0).getShortName() + " " + EnumChatFormatting.GREEN + attributeLevels.get(0);
-                if(attributes.size() == 2) {
-                    if(attributes.get(0).isPopular() && attributes.get(1).isPopular()) displayString += EnumChatFormatting.YELLOW + ",";
-                    if(attributes.get(1).isPopular()) displayString += " " + EnumChatFormatting.AQUA + attributes.get(1).getShortName() + " " + EnumChatFormatting.GREEN + attributeLevels.get(1);
-                }
-                displayString += EnumChatFormatting.YELLOW + " " + itemName;
-                break;
-            case 2:
-                displayString += " " + EnumChatFormatting.AQUA + attributes.get(0).getShortName() + " " + EnumChatFormatting.GREEN + attributeLevels.get(0);
-                if(attributes.size() == 2) displayString += EnumChatFormatting.YELLOW + ", " + EnumChatFormatting.AQUA + attributes.get(1).getShortName() + " " + EnumChatFormatting.GREEN + attributeLevels.get(1);
-                displayString += EnumChatFormatting.YELLOW + " " + itemName;
-                break;
-            case 3:
-                displayString += EnumChatFormatting.YELLOW + " " + itemName;
-                if(attributes.get(0).isPopular()) displayString += " - " + EnumChatFormatting.GREEN + "[" + EnumChatFormatting.AQUA + attributes.get(0).getName() + " " + attributeLevels.get(0) + EnumChatFormatting.GREEN + "]";
-                if(attributes.size() == 2) {
-                    if(!attributes.get(0).isPopular() && attributes.get(1).isPopular()) displayString += " - " + EnumChatFormatting.GREEN + "[" + EnumChatFormatting.AQUA + attributes.get(1).getName() + " " + attributeLevels.get(1) + EnumChatFormatting.GREEN + "]";
-                    if(attributes.get(0).isPopular() && attributes.get(1).isPopular()) displayString += " [" + EnumChatFormatting.AQUA + attributes.get(1).getName() + " " + attributeLevels.get(1) + EnumChatFormatting.GREEN + "]";
-                }
-                break;
-            case 4:
-                displayString += EnumChatFormatting.YELLOW + " " + itemName;
-                displayString += " - " + EnumChatFormatting.GREEN + "[" + EnumChatFormatting.AQUA + attributes.get(0).getName() + " " + attributeLevels.get(0) + EnumChatFormatting.GREEN + "]";
-                if(attributes.size() == 2) displayString += " [" + EnumChatFormatting.AQUA + attributes.get(1).getName() + " " + attributeLevels.get(1) + EnumChatFormatting.GREEN + "]";
-                break;
-            default:
-                displayString += EnumChatFormatting.YELLOW + " " + itemName;
+    /** Returns a list of item strings with EXACTLY 4 parts. */
+    private List<List<String>> getItemStrings(List<ItemWithAttributes> items) {
+        if(AttributeMod.config.overlayStyle == 1 || AttributeMod.config.overlayStyle == 2) {
+            // When showing short attribute names, show attributes left of the item name.
+            return items.stream().map(i -> Arrays.asList(
+                    getItemPriceString(i.getDetailedPrice().getEstimate()),
+                    getAttributeString(i.getAttributes().get(0), i.getAttributeLevels().get(0)),
+                    i.hasTwoAttributes() ? getAttributeString(i.getAttributes().get(1), i.getAttributeLevels().get(1)) : "",
+                    getItemNameString(i.getDisplayName())
+            )).collect(Collectors.toList());
+        } else {
+            // When showing long attribute names, show attributes right of the item name.
+            return items.stream().map(i -> Arrays.asList(
+                    getItemPriceString(i.getDetailedPrice().getEstimate()),
+                    getItemNameString(i.getDisplayName()),
+                    getAttributeString(i.getAttributes().get(0), i.getAttributeLevels().get(0)),
+                    i.hasTwoAttributes() ? getAttributeString(i.getAttributes().get(1), i.getAttributeLevels().get(1)) : ""
+            )).collect(Collectors.toList());
         }
-        return displayString;
     }
 
-    private String highlightItemString(String str) {
-        return str.replace("" + EnumChatFormatting.GOLD, "" + EnumChatFormatting.RED)
-                .replace("" + EnumChatFormatting.GREEN, "" + EnumChatFormatting.DARK_GREEN)
-                .replace("" + EnumChatFormatting.YELLOW, "" + EnumChatFormatting.GOLD)
-                .replace("" + EnumChatFormatting.AQUA, "" + EnumChatFormatting.BLUE);
+    private String getItemPriceString(int price) {
+        return EnumChatFormatting.GOLD + Helper.formatNumber(price);
+    }
+
+    private String getItemNameString(String itemName) {
+        return "  " + EnumChatFormatting.YELLOW + itemName;
+    }
+
+    private String getAttributeString(Attribute attribute, int level) {
+        switch(AttributeMod.config.overlayStyle) {
+            case 1: return attribute.isPopular()
+                ? " " + EnumChatFormatting.AQUA + attribute.getShortName() + " " + EnumChatFormatting.GREEN + level
+                : "";
+            case 2: return " " + EnumChatFormatting.AQUA + attribute.getShortName() + " " + EnumChatFormatting.GREEN + level;
+            case 3: return attribute.isPopular()
+                    ? EnumChatFormatting.GREEN + " [" + EnumChatFormatting.AQUA +attribute.getName() + " " + level + EnumChatFormatting.GREEN + "]"
+                    : "";
+            case 4: return EnumChatFormatting.GREEN + " [" + EnumChatFormatting.AQUA +attribute.getName() + " " + level + EnumChatFormatting.GREEN + "]";
+            default: return "";
+        }
+    }
+
+    private List<Integer> getColumnOffsets(List<List<String>> strings) {
+        List<Integer> result = new ArrayList<>();
+        List<Integer> stringWidths = IntStream.range(0, 4)
+                .mapToObj(i -> strings.stream()
+                        .map(parts -> AttributeMod.mc.fontRendererObj.getStringWidth(parts.get(i)))
+                        .max(Integer::compareTo)
+                        .orElse(0))
+                .collect(Collectors.toList());
+
+        int sum = 0;
+        for (int value : stringWidths) {
+            result.add(sum);
+            sum += value;
+        }
+        return result;
+    }
+
+    private String getFirstLine() {
+        return (scrollOffset != 0 ? EnumChatFormatting.YELLOW + "^ " + scrollOffset + " "  : "     ")
+                + EnumChatFormatting.DARK_RED + "Total Value " + EnumChatFormatting.YELLOW + "-"
+                + EnumChatFormatting.GOLD + " " + Helper.formatNumber(totalValue)
+                + (copyButtonFocused ? EnumChatFormatting.YELLOW : EnumChatFormatting.GRAY) + " [Copy]";
+    }
+
+    private List<String> highlightItemStrings(List<String> strings) {
+        return Arrays.asList(
+                strings.get(0).replace(EnumChatFormatting.GOLD.toString(), EnumChatFormatting.RED.toString()),
+                strings.get(1).replace(EnumChatFormatting.GREEN.toString(), EnumChatFormatting.DARK_GREEN.toString())
+                        .replace(EnumChatFormatting.AQUA.toString(), EnumChatFormatting.BLUE.toString())
+                        .replace(EnumChatFormatting.YELLOW.toString(), EnumChatFormatting.GOLD.toString()),
+                strings.get(2).replace(EnumChatFormatting.GREEN.toString(), EnumChatFormatting.DARK_GREEN.toString())
+                        .replace(EnumChatFormatting.AQUA.toString(), EnumChatFormatting.BLUE.toString())
+                        .replace(EnumChatFormatting.YELLOW.toString(), EnumChatFormatting.GOLD.toString()),
+                strings.get(3).replace(EnumChatFormatting.GREEN.toString(), EnumChatFormatting.DARK_GREEN.toString())
+                        .replace(EnumChatFormatting.AQUA.toString(), EnumChatFormatting.BLUE.toString())
+                        .replace(EnumChatFormatting.YELLOW.toString(), EnumChatFormatting.GOLD.toString())
+        );
     }
 
     private boolean isHoveringOverItemString(int index, FontRenderer fontRenderer, double mouseX) {
-        return index < AttributeMod.config.chestOverlayItemsToShow
-                && index + scrollOffset < itemSlotMapping.size()
-                && index != - 1
-                && mouseX - position.x < fontRenderer.getStringWidth(content.get(index + scrollOffset + 1)) * scale / 100;
+        if(index >= AttributeMod.config.chestOverlayItemsToShow || index == - 1) return false;
+        if(index + scrollOffset >= itemSlotMapping.size()) return false;
+
+        // TODO: fix for shards (somehow need a 2 in here if shard)
+
+        return mouseX < position.x + (xOffsets.get(3)
+                + fontRenderer.getStringWidth(content.get(index + scrollOffset).get(3))) * scale / 100;
     }
 
     private void checkIfCopyButtonFocused(double mousePosX, int focusedLine) {
-        int copyButtonPosX = position.x + AttributeMod.mc.fontRendererObj.getStringWidth(
-                "^ " + scrollOffset + " " + content.get(0).split("\\[Copy")[0]);
+        int copyButtonPosX = position.x + (int) (AttributeMod.mc.fontRendererObj.getStringWidth(getFirstLine().split("\\[Copy")[0]) * scale / 100);
 
         copyButtonFocused = focusedLine == 0
                 && mousePosX >= copyButtonPosX
-                && mousePosX <= copyButtonPosX + AttributeMod.mc.fontRendererObj.getStringWidth("[Copy]");
+                && mousePosX <= copyButtonPosX + AttributeMod.mc.fontRendererObj.getStringWidth("[Copy]") * scale / 100;
     }
 
     private void copyToClipboard() {
@@ -284,10 +329,9 @@ public class ChestItemDisplay extends ChestOverlayElement {
     private LinkedHashMap<String, Integer> getItemStringsToCopy() {
         LinkedHashMap<String, Integer> items = new LinkedHashMap<>(); // summarize items that are the same
         for(int i = 1; i < content.size(); i++) {
-            String item = content.get(i);
-            if(item.contains("Attribute Shard")) { // make attribute shards look nicer in the message
-                item = item.replace(" Attribute Shard -", "")
-                        .replace("[", "").replace("]", "");
+            String item = content.get(i).get(0) + " " + content.get(i).get(1) + " " + content.get(i).get(2) + " " + content.get(i).get(3);
+            if(content.get(i).get(1).equals("Attribute Shard")) { // make attribute shards look nicer in the message
+                item = item.replace("Attribute Shard ", "").replace("[", "").replace("]", "");
             }
             Integer count = items.get(item);
             items.put(item, count == null ? 1 : count + 1);
