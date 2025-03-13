@@ -71,9 +71,9 @@ dependencies {
     // Add DevAuth dependency, used to develop the mod with a real minecraft account.
     runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.2.1")
 
-    // Add Essential as dependency. Used for the config GUI.
-    compileOnly("gg.essential:essential-1.8.9-forge:+") // The actual essential dependency.
-    shadowImpl("gg.essential:loader-launchwrapper:+") // Will load essential at runtime (if not loaded by another mod).
+    // Essential (including vigilance) for the settings gui
+    compileOnly("gg.essential:essential-1.8.9-forge:+") // Used to compile with essential
+    shadowImpl("gg.essential:loader-launchwrapper:+") // Included in the final jar, loads essential at runtime (if not loaded by another mod)
 }
 
 // Tasks:
