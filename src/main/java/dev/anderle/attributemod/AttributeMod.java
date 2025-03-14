@@ -47,7 +47,8 @@ public class AttributeMod {
         Arrays.asList(
                 new ApCommand(),
                 new AuCommand(),
-                new SettingsCommand()
+                new SettingsCommand(),
+                new ProfitTrackerCommand()
         ).forEach(ClientCommandHandler.instance::registerCommand);
 
         Events.initializeFeatures();

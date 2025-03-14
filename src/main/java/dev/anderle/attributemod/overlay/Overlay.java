@@ -17,7 +17,7 @@ public abstract class Overlay {
     /** Contains all overlays this mod adds. */
     public static ArrayList<Overlay> ALL = new ArrayList<>();
     /** Initialize all overlays. */
-    public static void initAll() { new ChestItemDisplay(); new KuudraProfitDisplay(); }
+    public static void initAll() { new ChestItemDisplay(); new KuudraProfitDisplay(); new ProfitPerHourOverlay(); }
 
     protected Dimension size = null;
     protected Point position = null;

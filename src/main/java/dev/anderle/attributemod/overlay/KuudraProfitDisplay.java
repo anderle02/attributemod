@@ -30,8 +30,12 @@ public class KuudraProfitDisplay extends ChestOverlay {
     public static final int MAX_WIDTH = AttributeMod.mc.fontRendererObj.getStringWidth(
             "+ 888.8M Crimson Chestplate [Veteran 5] [Dominance 4]");
 
+    public static final String CLAIM_ITEM_NAME = "Open Reward Chest";
+
     /** The strings to render with next render tick. */
     private final ArrayList<String> content = new ArrayList<>();
+    /** The profit of the last chest (needed for profit/h overlay). */
+    private int lastChestProfit = 0;
 
     public KuudraProfitDisplay() {
         super("Kuudra Reward Chest Overlay", 0, Color.orange);
@@ -48,8 +52,19 @@ public class KuudraProfitDisplay extends ChestOverlay {
     }
 
     @Override
-    public void onClick(GuiScreenEvent.MouseInputEvent e, double mouseX, double mouseY) {
+    public void onClickOverlay(GuiScreenEvent.MouseInputEvent e, double mouseX, double mouseY) {
 
+    }
+
+    @Override
+    public void onClickSlot(GuiScreenEvent.MouseInputEvent e, Slot slot) {
+        if(!slot.getHasStack()) return;
+        if(!slot.getStack().getDisplayName().contains(CLAIM_ITEM_NAME)) return;
+
+        Overlay overlay = Overlay.ALL.stream().filter(o -> o instanceof ProfitPerHourOverlay).findFirst().orElse(null);
+        if(overlay == null || !overlay.isEnabled()) return;
+
+        ((ProfitPerHourOverlay) overlay).onKuudraPaidChestClaimed(lastChestProfit);
     }
 
     @Override
@@ -143,11 +158,18 @@ public class KuudraProfitDisplay extends ChestOverlay {
             chestItems.add(nbt);
         }
 
-        AttributeMod.backend.sendPostRequest("/kuudrachest", "&tier=" + getKuudraTier(), chestItems.toString(),
+        AttributeMod.backend.sendPostRequest(
+                "/kuudrachest",
+                "&tier=" + getKuudraTier() + "&bonusessence=" + AttributeMod.config.essenceBonus,
+                chestItems.toString(),
                 (String response) -> {
                     content.clear();
                     for(JsonElement line : new JsonParser().parse(response).getAsJsonArray()) {
                         content.add(line.getAsString());
+                        // For compatibility with older mod versions, the backend now sends the raw total profit as last line.
+                        if(line.getAsString().startsWith("%")) {
+                            lastChestProfit = Integer.parseInt(line.getAsString().replace("%", ""));
+                        }
                     }
                 }, (IOException error) -> AttributeMod.LOGGER.error("Failed fetching from /kuudrachest." , error));
     }

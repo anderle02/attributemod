@@ -86,7 +86,7 @@ public class Config extends Vigilant {
 
     /** Kuudra Reward Chest Display */
 
-    @Property(type = PropertyType.SWITCH, name = "Kuudra Reward Chest Overlay", category = "Overlays",
+    @Property(type = PropertyType.SWITCH, name = "Kuudra Profit Overlay", category = "Overlays",
             description = "Show §cKuudra chest profits§r and re-roll indicator.")
     public boolean kuudraChestOverlayEnabled = true;
 
@@ -98,6 +98,35 @@ public class Config extends Vigilant {
 
     @Property(type = PropertyType.NUMBER, name = "Kuudra Chest Overlay Scale in %", category = "Overlays", hidden = true)
     public int kuudraChestOverlayScale = 100;
+
+    @Property(type = PropertyType.DECIMAL_SLIDER, name = "Bonus Essence", category = "Overlays",
+            maxF = 20.0F,
+            description = "Your §cKuudra Pet§r may give you §6extra essence§r!\nEnter the percentage here for a §ccorrect Kuudra Profit value§r.")
+    public float essenceBonus = 0;
+
+    /** Profit Per Hour Display */
+
+    @Property(type = PropertyType.SWITCH, name = "Profit per Hour Overlay", category = "Overlays",
+            description = "Show §cKuudra profit per hour§r on your screen.")
+    public boolean profitPerHourEnabled = true;
+
+    @Property(type = PropertyType.NUMBER, name = "Profit per Hour Overlay X", category = "Overlays", hidden = true)
+    public int profitPerHourX = 0;
+
+    @Property(type = PropertyType.NUMBER, name = "Profit per Hour Overlay Y", category = "Overlays", hidden = true)
+    public int profitPerHourY = 0;
+
+    @Property(type = PropertyType.NUMBER, name = "Profit per Hour Overlay Scale in %", category = "Overlays", hidden = true)
+    public int profitPerHourScale = 100;
+
+    @Property(type = PropertyType.NUMBER, name = "Total Tracked Kuudra Profit in K", category = "Overlays", hidden = true)
+    public int totalProfitK = 0;
+
+    @Property(type = PropertyType.NUMBER, name = "Total Tracked Kuudra Chests", category = "Overlays", hidden = true)
+    public int totalOpenedChests = 0;
+
+    @Property(type = PropertyType.NUMBER, name = "Total Tracked Kuudra Profit Time", category = "Overlays", hidden = true)
+    public int totalProfitTime = 0;
 
     /** Tooltip Attribute Price */
 
@@ -144,8 +173,9 @@ public class Config extends Vigilant {
         private final List<String> categories = Arrays.asList("Overlays", "Activation", "Links");
         private final List<String> settings = Arrays.asList( // Yeah, I actually listed all settings in the correct order...
                 "Enable this Mod", "Mod Key", "Edit Overlay Positions", "Chest Overlay", "Overlay Style",
-                "Items to Show", "Kuudra Reward Chest Overlay", "Tooltip Attribute Price Display",
-                "Help, Bug Reports and Feature Suggestions", "Like this Mod?", "Update AttributeMod");
+                "Items to Show", "Kuudra Profit Overlay", "Bonus Essence", "Profit per Hour Overlay",
+                "Tooltip Attribute Price Display", "Help, Bug Reports and Feature Suggestions", "Like this Mod?",
+                "Update AttributeMod");
 
         @Override
         public @NotNull Comparator<Category> getCategoryComparator() {
@@ -163,6 +193,8 @@ public class Config extends Vigilant {
     private void configureDependencies() {
         addDependency("chestOverlayItemsToShow", "chestOverlayEnabled");
         addDependency("overlayStyle", "chestOverlayEnabled");
+        addDependency("profitPerHourEnabled", "kuudraChestOverlayEnabled");
+        addDependency("essenceBonus", "kuudraChestOverlayEnabled");
     }
 
     /* --------------------------------------------------------------------------------------------------------- */
