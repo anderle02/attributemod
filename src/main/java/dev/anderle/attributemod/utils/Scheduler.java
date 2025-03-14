@@ -15,7 +15,7 @@ public class Scheduler {
     public static final Map<String, Task> TASKS = new HashMap<>();
 
     public void registerTasks() {
-        TASKS.put("ah", new Task("ah", 2 * 60 * 20, () -> AttributeMod.backend.refreshPrices()));
+        TASKS.put("ah", new Task("update_prices", 2 * 60 * 20, () -> AttributeMod.backend.refreshPrices()));
     }
 
     public void executeTasksIfNeeded() {

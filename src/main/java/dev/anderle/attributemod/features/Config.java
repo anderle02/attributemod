@@ -2,7 +2,7 @@ package dev.anderle.attributemod.features;
 
 import dev.anderle.attributemod.AttributeMod;
 import dev.anderle.attributemod.overlay.MoveOverlayGui;
-import dev.anderle.attributemod.overlay.OverlayElement;
+import dev.anderle.attributemod.overlay.Overlay;
 import gg.essential.vigilance.Vigilant;
 import gg.essential.vigilance.data.*;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +23,7 @@ public class Config extends Vigilant {
         configureDependencies();
     }
 
-    /** ----------------------------------------------- ACTIVATION ----------------------------------------------- */
+    /* ----------------------------------------------- ACTIVATION ----------------------------------------------- */
 
     @Property(type = PropertyType.SWITCH, name = "Enable this Mod", category = "Activation",
             description = "Toggles §call features§r of this mod. You can completely disable this mod here." +
@@ -43,7 +43,7 @@ public class Config extends Vigilant {
     @Property(type = PropertyType.BUTTON, name = "Edit Overlay Positions", category = "Overlays", placeholder = "Edit",
             description = "Make sure you have at least one overlay enabled.")
     public void openMoveGui() {
-        if(OverlayElement.ALL.stream().anyMatch(OverlayElement::isEnabled)) {
+        if(Overlay.ALL.stream().anyMatch(Overlay::isEnabled)) {
             AttributeMod.mc.displayGuiScreen(new MoveOverlayGui());
         }
     }
@@ -53,6 +53,9 @@ public class Config extends Vigilant {
     @Property(type = PropertyType.SWITCH, name = "Chest Overlay", category = "Overlays",
             description = "Show an overlay for chests that contain items with attributes.")
     public boolean chestOverlayEnabled = true;
+
+    public enum OverlayStyle { ITEM_NAMES_ONLY, SHORT_ATTRIBUTES_POPULAR,
+        SHORT_ATTRIBUTES_ALL, LONG_ATTRIBUTES_POPULAR, LONG_ATTRIBUTES_ALL }
 
     @Property(
             type = PropertyType.SELECTOR, name = "Overlay Style", category = "Overlays",
@@ -65,7 +68,7 @@ public class Config extends Vigilant {
                     "long attribute names, all attributes §c(LARGEST)§r"
             }
     )
-    public int overlayStyle = 4;
+    public int overlayStyle = OverlayStyle.SHORT_ATTRIBUTES_ALL.ordinal(); // Would use the enum but Vigilance doesn't like that.
 
     @Property(type = PropertyType.SLIDER, name = "Items to Show", category = "Overlays", min = 1, max = 54,
             description = "Max amount of §chow many items to show§r in the chest overlay." +
@@ -138,7 +141,7 @@ public class Config extends Vigilant {
     /** Sorting */
 
     public static class Sorting extends SortingBehavior {
-        private final List<String> categories = Arrays.asList("Activation", "Overlays", "Links");
+        private final List<String> categories = Arrays.asList("Overlays", "Activation", "Links");
         private final List<String> settings = Arrays.asList( // Yeah, I actually listed all settings in the correct order...
                 "Enable this Mod", "Mod Key", "Edit Overlay Positions", "Chest Overlay", "Overlay Style",
                 "Items to Show", "Kuudra Reward Chest Overlay", "Tooltip Attribute Price Display",

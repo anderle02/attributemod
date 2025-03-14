@@ -2,9 +2,9 @@ package dev.anderle.attributemod;
 
 import dev.anderle.attributemod.features.*;
 import dev.anderle.attributemod.overlay.ChestItemDisplay;
-import dev.anderle.attributemod.overlay.ChestOverlayElement;
-import dev.anderle.attributemod.overlay.HudOverlayElement;
-import dev.anderle.attributemod.overlay.OverlayElement;
+import dev.anderle.attributemod.overlay.ChestOverlay;
+import dev.anderle.attributemod.overlay.HudOverlay;
+import dev.anderle.attributemod.overlay.Overlay;
 import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
@@ -32,9 +32,9 @@ public class Events {
     public void onGuiOpen(GuiOpenEvent e) {
         if(!AttributeMod.config.modEnabled) return;
 
-        OverlayElement.ALL.stream()
-                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender(e.gui))
-                .map(element -> (ChestOverlayElement) element)
+        Overlay.ALL.stream()
+                .filter(element -> element instanceof ChestOverlay && element.shouldRender(e.gui))
+                .map(element -> (ChestOverlay) element)
                 .forEach(element -> element.onGuiOpen((GuiChest) e.gui));
     }
 
@@ -42,9 +42,9 @@ public class Events {
     public void onRenderGameOverlay(RenderGameOverlayEvent e) {
         if(!AttributeMod.config.modEnabled) return;
 
-        OverlayElement.ALL.stream()
-                .filter(element -> element instanceof HudOverlayElement && element.shouldRender(null))
-                .map(element -> (HudOverlayElement) element)
+        Overlay.ALL.stream()
+                .filter(element -> element instanceof HudOverlay && element.shouldRender(null))
+                .map(element -> (HudOverlay) element)
                 .forEach(element -> {
                     element.updateIfNeeded(null);
                     element.renderOverlay(null);
@@ -55,9 +55,9 @@ public class Events {
     public void onDrawGuiBackground(GuiScreenEvent.BackgroundDrawnEvent e) {
         if(!AttributeMod.config.modEnabled) return;
 
-        OverlayElement.ALL.stream()
-                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender(e.gui))
-                .map(element -> (ChestOverlayElement) element)
+        Overlay.ALL.stream()
+                .filter(element -> element instanceof ChestOverlay && element.shouldRender(e.gui))
+                .map(element -> (ChestOverlay) element)
                 .forEach(element -> {
                     element.updateIfNeeded(e.gui);
                     element.renderOverlay(e.gui);
@@ -68,9 +68,9 @@ public class Events {
     public void onDrawGuiForeground(GuiScreenEvent.DrawScreenEvent e) {
         if(!AttributeMod.config.modEnabled) return;
 
-        OverlayElement.ALL.stream()
-                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender(e.gui))
-                .map(element -> (ChestOverlayElement) element)
+        Overlay.ALL.stream()
+                .filter(element -> element instanceof ChestOverlay && element.shouldRender(e.gui))
+                .map(element -> (ChestOverlay) element)
                 .forEach(element -> element.onDrawForeground((GuiChest) e.gui));
     }
 
@@ -81,9 +81,9 @@ public class Events {
         double mousePosX = (double) Mouse.getEventX() * e.gui.width / e.gui.mc.displayWidth;
         double mousePosY = (e.gui.height - (double) Mouse.getEventY() * e.gui.height / e.gui.mc.displayHeight);
 
-        OverlayElement.ALL.stream()
-                .filter(element -> element instanceof ChestOverlayElement && element.shouldRender(e.gui))
-                .map(element -> (ChestOverlayElement) element)
+        Overlay.ALL.stream()
+                .filter(element -> element instanceof ChestOverlay && element.shouldRender(e.gui))
+                .map(element -> (ChestOverlay) element)
                 .forEach(element -> {
                     if(element.isInside(mousePosX, mousePosY)) {
                         if(Mouse.getEventButton() == 0 && Mouse.isButtonDown(0)) {

@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class RewardChestOverlay extends ChestOverlayElement {
+public class KuudraProfitDisplay extends ChestOverlay {
     // Didn't take the longest possible width so it's not that wide.
     // Doesn't really matter for this overlay because it's not clickable anyway.
     public static final int MAX_WIDTH = AttributeMod.mc.fontRendererObj.getStringWidth(
@@ -33,7 +33,7 @@ public class RewardChestOverlay extends ChestOverlayElement {
     /** The strings to render with next render tick. */
     private final ArrayList<String> content = new ArrayList<>();
 
-    public RewardChestOverlay() {
+    public KuudraProfitDisplay() {
         super("Kuudra Reward Chest Overlay", 0, Color.orange);
     }
 

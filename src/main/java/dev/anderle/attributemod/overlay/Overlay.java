@@ -11,13 +11,13 @@ import org.lwjgl.opengl.GL11;
 import java.awt.*;
 import java.util.ArrayList;
 
-public abstract class OverlayElement {
+public abstract class Overlay {
     public static final double MIN_OVERLAY_SCALE = 10;
 
     /** Contains all overlays this mod adds. */
-    public static ArrayList<OverlayElement> ALL = new ArrayList<>();
+    public static ArrayList<Overlay> ALL = new ArrayList<>();
     /** Initialize all overlays. */
-    public static void initAll() { new ChestItemDisplay(); new RewardChestOverlay(); }
+    public static void initAll() { new ChestItemDisplay(); new KuudraProfitDisplay(); }
 
     protected Dimension size = null;
     protected Point position = null;
@@ -33,7 +33,7 @@ public abstract class OverlayElement {
 
     /** Create a new overlay element. If updateInterval is set to 0, the overlay's content
      * will be set once and not updated again while the screen containing the overlay is shown. */
-    public OverlayElement(String name, long updateInterval, Color color) {
+    public Overlay(String name, long updateInterval, Color color) {
         this.name = name;
         this.color = color;
         this.updateInterval = updateInterval;

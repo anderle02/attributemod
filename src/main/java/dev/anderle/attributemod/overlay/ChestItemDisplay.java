@@ -1,6 +1,7 @@
 package dev.anderle.attributemod.overlay;
 
 import dev.anderle.attributemod.AttributeMod;
+import dev.anderle.attributemod.features.Config;
 import dev.anderle.attributemod.utils.Attribute;
 import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.ItemWithAttributes;
@@ -24,35 +25,32 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class ChestItemDisplay extends ChestOverlayElement {
+public class ChestItemDisplay extends ChestOverlay {
     /** Stores which item is where, used to locate it when user interacts with the item list. */
     private final Map<Integer, Slot> itemSlotMapping = new HashMap<>();
-
-    /** The strings to render with next render tick. Has to be split in columns to be able to be properly aligned. */
+    /** The strings to render with next render tick. Split in columns to be properly aligned. */
     private List<List<String>> content = new ArrayList<>();
     /** Sums um max widths of each column, to know at which x to render the column. */
     private List<Integer> xOffsets = new ArrayList<>();
-    /** Current total value of the chest items. */
-    private long totalValue = 0;
 
-    /** Index of the item string the user is currently hovering over. */
-    private int hoveredItem = -1;
-    private int scrollOffset = 0;
-    private boolean copyButtonFocused = false;
+    private long totalValue = 0; // Current total value of the chest.
+    private int hoveredItem = -1; // Index of `itemSlotMapping`, which item is focused.
+    private int scrollOffset = 0; // Scroll offset in `content`.
+    private boolean copyButtonFocused = false; // Whether the copy to clipboard button is focused.
 
     public ChestItemDisplay() {
         super("Chest Overlay", 1000, Color.blue);
     }
 
-    @Override
-    public void onGuiOpen(GuiChest chest) {
+    /** When opening a chest, reset hovered item, scroll offset and immediately update the data. */
+    public @Override void onGuiOpen(GuiChest chest) {
         hoveredItem = -1;
         scrollOffset = 0;
         scheduleImmediateUpdate();
     }
 
-    @Override
-    public void onClick(GuiScreenEvent.MouseInputEvent e, double mouseX, double mouseY) {
+    /** When clicking, either move cursor to `hoveredItem` or copy data to clipboard. */
+    public @Override void onClick(GuiScreenEvent.MouseInputEvent e, double mouseX, double mouseY) {
         if(copyButtonFocused) { copyToClipboard(); return; }
         if(hoveredItem == -1) return;
 
@@ -68,8 +66,8 @@ public class ChestItemDisplay extends ChestOverlayElement {
         hoveredItem = -1;
     }
 
-    @Override
-    public void onHover(GuiChest chest, double mouseX, double mouseY) {
+    /** When the mouse is moved, check if any item string or the copy button is focused. */
+    public @Override void onHover(GuiChest chest, double mouseX, double mouseY) {
         if(itemSlotMapping.isEmpty()) return; // Don't try to calculate hovered item if there are no items.
 
         // Font height and width need to be scaled by the scale used for rendering.
@@ -84,8 +82,8 @@ public class ChestItemDisplay extends ChestOverlayElement {
         checkIfCopyButtonFocused(mouseX, focusedLine);
     }
 
-    @Override
-    public void onScroll(GuiChest chest, boolean direction) {
+    /** When scrolling, update `scrollOffset` if allowed. */
+    public @Override void onScroll(GuiChest chest, boolean direction) {
         if(itemSlotMapping.isEmpty()) return; // Don't try to calculate scroll offset if there are no items.
 
         if(direction && scrollOffset + AttributeMod.config.chestOverlayItemsToShow < itemSlotMapping.size()) {
@@ -95,15 +93,15 @@ public class ChestItemDisplay extends ChestOverlayElement {
         }
     }
 
-    @Override
-    public void onDrawForeground(GuiChest chest) {
+    /** When the foreground layer is drawn, highlight the slot of `hoveredItem`, if needed. */
+    public @Override void onDrawForeground(GuiChest chest) {
         if(hoveredItem != -1) {
             highlightSlot(itemSlotMapping.get(hoveredItem), chest);
         }
     }
 
-    @Override
-    public void updateData(GuiScreen screen) {
+    /** Update item prices and locations. */
+    public @Override void updateData(GuiScreen screen) {
         List<Slot> allSlots = ((GuiChest) screen).inventorySlots.inventorySlots;
         List<ItemWithAttributes> items = ItemWithAttributes.fromContainer(allSlots.subList(0, allSlots.size() - 36));
 
@@ -123,8 +121,8 @@ public class ChestItemDisplay extends ChestOverlayElement {
         }
     }
 
-    @Override
-    public void saveScaleAndLocation() {
+    /** Save current overlay scale and position to config. */
+    public @Override void saveScaleAndLocation() {
         AttributeMod.config.chestOverlayScale = (int) scale;
         AttributeMod.config.chestOverlayX = position.x;
         AttributeMod.config.chestOverlayY = position.y;
@@ -132,15 +130,15 @@ public class ChestItemDisplay extends ChestOverlayElement {
         AttributeMod.config.markDirty();
     }
 
-    @Override
-    public void readScaleAndLocation() {
+    /** Read scale and location from config and update the overlay size. */
+    public @Override void readScaleAndLocation() {
         scale = AttributeMod.config.chestOverlayScale;
         position = new Point(AttributeMod.config.chestOverlayX, AttributeMod.config.chestOverlayY);
         size = getSize();
     }
 
-    @Override // Show this overlay in all GuiChest except Kuudra reward chests.
-    public boolean shouldRender(GuiScreen screen) {
+    /** Show this overlay in all GuiChest except Kuudra reward chests. */
+    public @Override boolean shouldRender(GuiScreen screen) {
         if(!this.isEnabled() || !(screen instanceof GuiChest)) return false;
 
         return !((ContainerChest) ((GuiChest) screen).inventorySlots)
@@ -148,32 +146,31 @@ public class ChestItemDisplay extends ChestOverlayElement {
                 .contains("Paid Chest");
     }
 
-    @Override
-    public Dimension getSize() {
+    /** Get current overlay width and height depending on its scale and hardcoded "longest possible" item strings. */
+    public @Override Dimension getSize() {
         // Height = (items + top line + items remaining line) * (line height + 1 space)
         int height = (AttributeMod.config.chestOverlayItemsToShow + 2) * (AttributeMod.mc.fontRendererObj.FONT_HEIGHT + 1);
         String longestText;
 
-        switch(AttributeMod.config.overlayStyle) { // Pretty sure these are the longest possible strings for each overlay style
-            case 0: longestText = "888.8M  Vanquished Glowstone Gauntlet"; break;
-            case 1:
-            case 2: longestText = "888.8M  DOM 10, VET 10 Vanquished Glowstone Gauntlet"; break;
+        switch(Config.OverlayStyle.values()[AttributeMod.config.overlayStyle]) { // Pretty sure these are the longest possible strings for each overlay style
+            case ITEM_NAMES_ONLY: longestText = "888.8M  Vanquished Glowstone Gauntlet"; break;
+            case SHORT_ATTRIBUTES_POPULAR:
+            case SHORT_ATTRIBUTES_ALL: longestText = "888.8M  DOM 10, VET 10 Vanquished Glowstone Gauntlet"; break;
             default: longestText = "888.8M  Vanquished Glowstone Gauntlet - [Arachno Resistance 10] [Blazing Resistance 10]";
         }
 
         return new Dimension(
                 (int) (AttributeMod.mc.fontRendererObj.getStringWidth(longestText) * scale / 100),
-                (int) (height * scale / 100)
-        );
+                (int) (height * scale / 100));
     }
 
-    @Override
-    public boolean isEnabled() {
+    /** Returns whether the chest overlay is enabled in config. */
+    public @Override boolean isEnabled() {
         return AttributeMod.config.chestOverlayEnabled;
     }
 
-    @Override
-    public void renderOverlay(GuiScreen screen) {
+    /** Renders all lines and columns. Adds a top line and the scroll offset display. */
+    public @Override void renderOverlay(GuiScreen screen) {
         if (itemSlotMapping.isEmpty()) return;
 
         int itemsBelow = content.size() > AttributeMod.config.chestOverlayItemsToShow
@@ -209,11 +206,9 @@ public class ChestItemDisplay extends ChestOverlayElement {
         GL11.glPopMatrix();
     }
 
-    public void resetHoveredItem() {
-        hoveredItem = -1;
-    }
+    /* ---------------------------------------------- Helper Functions ---------------------------------------------- */
 
-    /** Returns a list of item strings with EXACTLY 4 parts. */
+    /** Returns a list of item strings with EXACTLY 4 columns. */
     private List<List<String>> getItemStrings(List<ItemWithAttributes> items) {
         if(AttributeMod.config.overlayStyle == 1 || AttributeMod.config.overlayStyle == 2) {
             // When showing short attribute names, show attributes left of the item name.
@@ -243,15 +238,15 @@ public class ChestItemDisplay extends ChestOverlayElement {
     }
 
     private String getAttributeString(Attribute attribute, int level) {
-        switch(AttributeMod.config.overlayStyle) {
-            case 1: return attribute.isPopular()
+        switch(Config.OverlayStyle.values()[AttributeMod.config.overlayStyle]) {
+            case SHORT_ATTRIBUTES_POPULAR: return attribute.isPopular()
                 ? " " + EnumChatFormatting.AQUA + attribute.getShortName() + " " + EnumChatFormatting.GREEN + level
                 : "";
-            case 2: return " " + EnumChatFormatting.AQUA + attribute.getShortName() + " " + EnumChatFormatting.GREEN + level;
-            case 3: return attribute.isPopular()
+            case SHORT_ATTRIBUTES_ALL: return " " + EnumChatFormatting.AQUA + attribute.getShortName() + " " + EnumChatFormatting.GREEN + level;
+            case LONG_ATTRIBUTES_POPULAR: return attribute.isPopular()
                     ? EnumChatFormatting.GREEN + " [" + EnumChatFormatting.AQUA +attribute.getName() + " " + level + EnumChatFormatting.GREEN + "]"
                     : "";
-            case 4: return EnumChatFormatting.GREEN + " [" + EnumChatFormatting.AQUA +attribute.getName() + " " + level + EnumChatFormatting.GREEN + "]";
+            case LONG_ATTRIBUTES_ALL: return EnumChatFormatting.GREEN + " [" + EnumChatFormatting.AQUA +attribute.getName() + " " + level + EnumChatFormatting.GREEN + "]";
             default: return "";
         }
     }
@@ -299,10 +294,11 @@ public class ChestItemDisplay extends ChestOverlayElement {
         if(index >= AttributeMod.config.chestOverlayItemsToShow || index == - 1) return false;
         if(index + scrollOffset >= itemSlotMapping.size()) return false;
 
-        // TODO: fix for shards (somehow need a 2 in here if shard)
+        List<String> itemStrings = content.get(index + scrollOffset);
+        int lastColumn = itemStrings.get(3).isEmpty() ? (itemStrings.get(2).isEmpty() ? 1 : 2) : 3;
 
-        return mouseX < position.x + (xOffsets.get(3)
-                + fontRenderer.getStringWidth(content.get(index + scrollOffset).get(3))) * scale / 100;
+        return mouseX < position.x + (xOffsets.get(lastColumn)
+                + fontRenderer.getStringWidth(itemStrings.get(lastColumn))) * scale / 100;
     }
 
     private void checkIfCopyButtonFocused(double mousePosX, int focusedLine) {
@@ -337,5 +333,9 @@ public class ChestItemDisplay extends ChestOverlayElement {
             items.put(item, count == null ? 1 : count + 1);
         }
         return items;
+    }
+
+    public void resetHoveredItem() {
+        hoveredItem = -1;
     }
 }

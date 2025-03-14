@@ -2,7 +2,7 @@ package dev.anderle.attributemod;
 
 import dev.anderle.attributemod.api.Backend;
 import dev.anderle.attributemod.features.*;
-import dev.anderle.attributemod.overlay.OverlayElement;
+import dev.anderle.attributemod.overlay.Overlay;
 import dev.anderle.attributemod.utils.Scheduler;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -17,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.util.Arrays;
 
-@Mod(modid = AttributeMod.MODID, useMetadata = true, clientSideOnly = true)
+@Mod(modid = AttributeMod.MODID, useMetadata = true, clientSideOnly = true, acceptedMinecraftVersions = "[1.8.9]")
 public class AttributeMod {
     public static final String NAME = "Attribute Mod";
     public static final String MODID = "attributemod";
@@ -51,7 +51,7 @@ public class AttributeMod {
         ).forEach(ClientCommandHandler.instance::registerCommand);
 
         Events.initializeFeatures();
-        OverlayElement.initAll();
+        Overlay.initAll();
         scheduler.registerTasks();
 
         LOGGER.log(Level.INFO, "Attribute Mod Loaded!");

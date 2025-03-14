@@ -11,13 +11,13 @@ import java.awt.*;
  * A base class for all overlays that work inside a ChestContainer.
  * Implement abstract methods to define functionality.
  */
-public abstract class ChestOverlayElement extends OverlayElement {
+public abstract class ChestOverlay extends Overlay {
     public static final int CHEST_GUI_WIDTH = 176;
     public static final int CHEST_GUI_HEIGHT = 220;
     public static final int SLOT_SIZE = 16;
 
-    /** @see OverlayElement */
-    public ChestOverlayElement(String name, long updateInterval, Color color) {
+    /** @see Overlay */
+    public ChestOverlay(String name, long updateInterval, Color color) {
         super(name, updateInterval, color);
     }
 
