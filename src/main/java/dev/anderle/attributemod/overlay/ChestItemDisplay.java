@@ -50,7 +50,7 @@ public class ChestItemDisplay extends ChestOverlay {
     }
 
     /** When clicking, either move cursor to `hoveredItem` or copy data to clipboard. */
-    public @Override void onClick(GuiScreenEvent.MouseInputEvent e, double mouseX, double mouseY) {
+    public @Override void onClickOverlay(GuiScreenEvent.MouseInputEvent e, double mouseX, double mouseY) {
         if(copyButtonFocused) { copyToClipboard(); return; }
         if(hoveredItem == -1) return;
 
@@ -61,9 +61,14 @@ public class ChestItemDisplay extends ChestOverlay {
         );
 
         if(!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && e.isCancelable()) e.setCanceled(true);
-        else scheduleImmediateUpdate();
+        else scheduleImmediateUpdate(); // Since onClickSlot does not trigger here.
 
         hoveredItem = -1;
+    }
+
+    @Override
+    public void onClickSlot(GuiScreenEvent.MouseInputEvent e, Slot slot) {
+        if(!itemSlotMapping.isEmpty()) scheduleImmediateUpdate();
     }
 
     /** When the mouse is moved, check if any item string or the copy button is focused. */

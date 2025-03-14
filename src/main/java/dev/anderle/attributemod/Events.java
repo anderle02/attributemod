@@ -6,6 +6,7 @@ import dev.anderle.attributemod.overlay.ChestOverlay;
 import dev.anderle.attributemod.overlay.HudOverlay;
 import dev.anderle.attributemod.overlay.Overlay;
 import net.minecraft.client.gui.inventory.GuiChest;
+import net.minecraft.inventory.Slot;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -87,7 +88,7 @@ public class Events {
                 .forEach(element -> {
                     if(element.isInside(mousePosX, mousePosY)) {
                         if(Mouse.getEventButton() == 0 && Mouse.isButtonDown(0)) {
-                            element.onClick(e, mousePosX, mousePosY);
+                            element.onClickOverlay(e, mousePosX, mousePosY);
                         } else if(Mouse.getEventDWheel() != 0) {
                             element.onScroll((GuiChest) e.gui, Mouse.getEventDWheel() < 0);
                             element.onHover((GuiChest) e.gui, mousePosX, mousePosY);
@@ -95,6 +96,10 @@ public class Events {
                             element.onHover((GuiChest) e.gui, mousePosX, mousePosY);
                         }
                     } else {
+                        if(Mouse.getEventButton() == 0 && Mouse.isButtonDown(0)) {
+                            Slot slot = ((GuiChest) e.gui).getSlotUnderMouse();
+                            if(slot != null) element.onClickSlot(e, slot);
+                        }
                         if(element instanceof ChestItemDisplay) {
                             ((ChestItemDisplay) element).resetHoveredItem();
                         }

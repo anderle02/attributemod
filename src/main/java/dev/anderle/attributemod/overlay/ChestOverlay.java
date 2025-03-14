@@ -23,7 +23,9 @@ public abstract class ChestOverlay extends Overlay {
 
     public abstract void onGuiOpen(GuiChest chest);
     /** Called when the user clicks inside the overlay. */
-    public abstract void onClick(GuiScreenEvent.MouseInputEvent e, double mouseX, double mouseY);
+    public abstract void onClickOverlay(GuiScreenEvent.MouseInputEvent e, double mouseX, double mouseY);
+    /** Called when the user clicks a container or inventory slot. */
+    public abstract void onClickSlot(GuiScreenEvent.MouseInputEvent e, Slot slot);
     /** Called when the user hovers inside the overlay. */
     public abstract void onHover(GuiChest chest, double mouseX, double mouseY);
     /** Called when the user scrolls inside the overlay. Direction = false for up, true for down. */
