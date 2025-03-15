@@ -1,10 +1,8 @@
 package dev.anderle.attributemod;
 
-import dev.anderle.attributemod.features.*;
-import dev.anderle.attributemod.overlay.ChestItemDisplay;
-import dev.anderle.attributemod.overlay.ChestOverlay;
-import dev.anderle.attributemod.overlay.HudOverlay;
-import dev.anderle.attributemod.overlay.Overlay;
+import dev.anderle.attributemod.api.OneTimeMessage;
+import dev.anderle.attributemod.commands.KuudraStatsCommand;
+import dev.anderle.attributemod.overlay.*;
 import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.inventory.Slot;
 import net.minecraftforge.client.ClientCommandHandler;

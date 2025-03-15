@@ -1,4 +1,4 @@
-package dev.anderle.attributemod.features;
+package dev.anderle.attributemod.commands;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;

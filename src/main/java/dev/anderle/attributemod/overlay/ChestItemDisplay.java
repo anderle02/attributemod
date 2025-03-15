@@ -1,7 +1,7 @@
 package dev.anderle.attributemod.overlay;
 
 import dev.anderle.attributemod.AttributeMod;
-import dev.anderle.attributemod.features.Config;
+import dev.anderle.attributemod.Config;
 import dev.anderle.attributemod.utils.Attribute;
 import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.ItemWithAttributes;

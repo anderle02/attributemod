@@ -1,7 +1,7 @@
 package dev.anderle.attributemod;
 
 import dev.anderle.attributemod.api.Backend;
-import dev.anderle.attributemod.features.*;
+import dev.anderle.attributemod.commands.*;
 import dev.anderle.attributemod.overlay.Overlay;
 import dev.anderle.attributemod.utils.Scheduler;
 import net.minecraft.client.Minecraft;

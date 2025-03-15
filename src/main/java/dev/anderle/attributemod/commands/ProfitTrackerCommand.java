@@ -1,4 +1,4 @@
-package dev.anderle.attributemod.features;
+package dev.anderle.attributemod.commands;
 
 import dev.anderle.attributemod.overlay.Overlay;
 import dev.anderle.attributemod.overlay.ProfitPerHourOverlay;

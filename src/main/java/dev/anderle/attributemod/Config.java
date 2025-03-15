@@ -1,6 +1,5 @@
-package dev.anderle.attributemod.features;
+package dev.anderle.attributemod;
 
-import dev.anderle.attributemod.AttributeMod;
 import dev.anderle.attributemod.overlay.MoveOverlayGui;
 import dev.anderle.attributemod.overlay.Overlay;
 import gg.essential.vigilance.Vigilant;

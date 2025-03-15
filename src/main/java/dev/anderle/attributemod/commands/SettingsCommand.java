@@ -1,8 +1,7 @@
-package dev.anderle.attributemod.features;
+package dev.anderle.attributemod.commands;
 
 import dev.anderle.attributemod.Events;
 import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 
 import java.util.Collections;

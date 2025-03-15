@@ -1,4 +1,4 @@
-package dev.anderle.attributemod.features;
+package dev.anderle.attributemod.overlay;
 
 import dev.anderle.attributemod.utils.Attribute;
 import dev.anderle.attributemod.utils.Helper;
