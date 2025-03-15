@@ -12,6 +12,9 @@ import java.time.Duration;
 import java.util.ArrayList;
 
 public class ProfitPerHourOverlay extends HudOverlay {
+    public static final int MAX_WIDTH = AttributeMod.mc.fontRendererObj.getStringWidth(
+            "Time Played: 88 days, 00:00:00 [Stopped]");
+
     private long totalProfit;
     private long totalTrackedTime;
     private int openedChests;
@@ -42,7 +45,10 @@ public class ProfitPerHourOverlay extends HudOverlay {
 
     @Override
     public Dimension getSize() {
-        return new Dimension((int) (100 * scale / 100), (int) (50 * scale / 100));
+        return new Dimension(
+                (int) (MAX_WIDTH * scale / 100),
+                (int) (4 * (AttributeMod.mc.fontRendererObj.FONT_HEIGHT + 1) * scale / 100)
+        );
     }
 
     @Override
@@ -86,7 +92,7 @@ public class ProfitPerHourOverlay extends HudOverlay {
             fontRenderer.drawString(
                     content.get(i),
                     (int) (position.x * 100 / scale),
-                    (int) (position.y * 100 / scale) + (i + 1) * (fontRenderer.FONT_HEIGHT + 1),
+                    (int) (position.y * 100 / scale) + i * (fontRenderer.FONT_HEIGHT + 1),
                     0xffffffff
             );
         }

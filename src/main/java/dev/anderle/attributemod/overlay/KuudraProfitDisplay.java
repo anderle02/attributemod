@@ -92,7 +92,7 @@ public class KuudraProfitDisplay extends ChestOverlay {
         for(int i = 0; i < content.size(); i++) {
             screen.drawString(
                     screen.mc.fontRendererObj, content.get(i),
-                    (int) (position.x * 100 / scale), (int) (position.y * 100 / scale) + (i + 1) * (screen.mc.fontRendererObj.FONT_HEIGHT + 1),
+                    (int) (position.x * 100 / scale), (int) (position.y * 100 / scale) + i * (screen.mc.fontRendererObj.FONT_HEIGHT + 1),
                     0xffffffff
             );
         }

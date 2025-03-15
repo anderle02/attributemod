@@ -48,7 +48,7 @@ public class Events {
         if(!AttributeMod.config.modEnabled) return;
 
         Overlay.ALL.stream()
-                .filter(element -> element instanceof HudOverlay && element.shouldRender(null))
+                .filter(element -> element instanceof HudOverlay && element.shouldRender(AttributeMod.mc.currentScreen))
                 .map(element -> (HudOverlay) element)
                 .forEach(element -> {
                     element.updateIfNeeded(null);
