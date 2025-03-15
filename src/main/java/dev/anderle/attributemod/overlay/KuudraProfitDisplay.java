@@ -165,10 +165,11 @@ public class KuudraProfitDisplay extends ChestOverlay {
                 (String response) -> {
                     content.clear();
                     for(JsonElement line : new JsonParser().parse(response).getAsJsonArray()) {
-                        content.add(line.getAsString());
                         // For compatibility with older mod versions, the backend now sends the raw total profit as last line.
                         if(line.getAsString().startsWith("%")) {
-                            lastChestProfit = Integer.parseInt(line.getAsString().replace("%", ""));
+                            lastChestProfit = (int) Double.parseDouble(line.getAsString().replace("%", ""));
+                        } else {
+                            content.add(line.getAsString());
                         }
                     }
                 }, (IOException error) -> AttributeMod.LOGGER.error("Failed fetching from /kuudrachest." , error));

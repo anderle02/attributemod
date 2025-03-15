@@ -120,6 +120,7 @@ public class ProfitPerHourOverlay extends HudOverlay {
     public void reset() {
         totalProfit = 0;
         totalTrackedTime = 0;
+        openedChests = 0;
         updatedOnce = false;
         startTime = System.currentTimeMillis() / 1000L;
         endTime = System.currentTimeMillis() / 1000L;

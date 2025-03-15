@@ -40,7 +40,7 @@ public class Events {
     }
 
     @SubscribeEvent @SuppressWarnings("unused")
-    public void onRenderGameOverlay(RenderGameOverlayEvent e) {
+    public void onRenderGameOverlayText(RenderGameOverlayEvent.Text e) {
         if(!AttributeMod.config.modEnabled) return;
 
         Overlay.ALL.stream()
