@@ -7,6 +7,8 @@ import dev.anderle.attributemod.overlay.HudOverlay;
 import dev.anderle.attributemod.overlay.Overlay;
 import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.inventory.Slot;
+import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -15,6 +17,8 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.input.Mouse;
+
+import java.util.regex.Matcher;
 
 public class Events {
     // Some objects that respond to events are initialized here, to avoid duplicate event handlers.
@@ -118,6 +122,16 @@ public class Events {
     public void onRenderToolTip(ItemTooltipEvent e) {
         if(AttributeMod.config.modEnabled && AttributeMod.config.tooltipAttributePriceEnabled) {
             tooltipPriceDisplay.onRenderToolTip(e);
+        }
+    }
+
+    @SubscribeEvent @SuppressWarnings("unused")
+    public void onChat(ClientChatReceivedEvent e) {
+        Matcher matcher = KuudraStatsCommand.PARTY_JOIN_PATTERN.matcher(e.message.getUnformattedText());
+        if(matcher.matches()) {
+            String playerName = matcher.group(1);
+            if(playerName.equals(AttributeMod.mc.thePlayer.getName())) return;
+            ClientCommandHandler.instance.executeCommand(AttributeMod.mc.thePlayer, "/kuudra " + playerName);
         }
     }
 

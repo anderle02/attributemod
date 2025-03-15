@@ -48,7 +48,8 @@ public class AttributeMod {
                 new ApCommand(),
                 new AuCommand(),
                 new SettingsCommand(),
-                new ProfitTrackerCommand()
+                new ProfitTrackerCommand(),
+                new KuudraStatsCommand()
         ).forEach(ClientCommandHandler.instance::registerCommand);
 
         Events.initializeFeatures();
