@@ -97,9 +97,11 @@ public class AuCommand extends CommandBase {
         AttributeMod.backend.sendGetRequest(
                 "/attributeupgrade",
                 "&attribute=" + Helper.urlEncodeAttribute(attribute) + "&item=" + item + "&from=" + from + "&to=" + to,
-                (String response) -> ChatUtils.resendChatMessage(this.chat, ChatUtils.decodeToFancyChatMessage(
-                        new JsonParser().parse(response).getAsJsonObject().get("text").getAsString()
-                )),
+                (String response) -> {
+                    ChatComponentText component = new ChatComponentText(Constants.prefix);
+                    ChatUtils.decodeToFancyChatMessage(component, new JsonParser().parse(response).getAsJsonObject().get("text").getAsString());
+                    ChatUtils.resendChatMessage(this.chat, component);
+                },
                 (IOException error) -> {
                     int statusCode = error instanceof HttpResponseException
                             ? ((HttpResponseException) error).getStatusCode() : 0;

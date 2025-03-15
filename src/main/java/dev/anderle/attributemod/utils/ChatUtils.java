@@ -74,8 +74,7 @@ public class ChatUtils {
      *  - substrings that start with "%i" will add a ClickEvent to run the /viewauction command for auction id
      *  - substrings that start with "%n" will be shown as tooltip on HoverEvent
      */
-    public static IChatComponent decodeToFancyChatMessage(String string) {
-        IChatComponent comp = new ChatComponentText(Constants.prefix);
+    public static void decodeToFancyChatMessage(IChatComponent comp, String string) {
         for(String part : string.split("#")) {
             if(part.startsWith("t")) {
                 comp.appendSibling(new ChatComponentText(part.replaceFirst("t", "")));
@@ -97,6 +96,5 @@ public class ChatUtils {
                     )));
             }
         }
-        return comp;
     }
 }

@@ -107,7 +107,7 @@ public class Config extends Vigilant {
     /** Profit Per Hour Display */
 
     @Property(type = PropertyType.SWITCH, name = "Profit per Hour Overlay", category = "Overlays",
-            description = "Show §cKuudra profit per hour§r on your screen.")
+            description = "Show §cKuudra profit per hour§r on your screen. Requires the Kuudra Profit Overlay to be enabled.")
     public boolean profitPerHourEnabled = true;
 
     @Property(type = PropertyType.NUMBER, name = "Profit per Hour Overlay X", category = "Overlays", hidden = true)
@@ -133,6 +133,17 @@ public class Config extends Vigilant {
     @Property(type = PropertyType.SWITCH, name = "Tooltip Attribute Price Display", category = "Overlays",
             description = "Show attribute prices directly §cnext to the attributes§r on item tooltips.")
     public boolean tooltipAttributePriceEnabled = true;
+
+    /* ---------------------------------------------- KUUDRA STATS --------------------------------------------- */
+
+    @Property(type = PropertyType.SWITCH, name = "Party Finder Stats", category = "Kuudra Stats",
+            description = "When someone joins your party, §cautomatically run /kuudra§r on them.")
+    public boolean partyFinderShowStats = true;
+
+    @Property(type = PropertyType.SELECTOR, name = "Style", category = "Kuudra Stats",
+            description = "The style of the §c/kuudra§r command.",
+            options = { "Normal", "Compact" })
+    public int statsMessageStyle = 1;
 
     /* ---------------------------------------------- HELP / BUGS ---------------------------------------------- */
 
@@ -170,12 +181,12 @@ public class Config extends Vigilant {
     /** Sorting */
 
     public static class Sorting extends SortingBehavior {
-        private final List<String> categories = Arrays.asList("Overlays", "Activation", "Links");
+        private final List<String> categories = Arrays.asList("Overlays", "Kuudra Stats", "Activation", "Links");
         private final List<String> settings = Arrays.asList( // Yeah, I actually listed all settings in the correct order...
                 "Enable this Mod", "Mod Key", "Edit Overlay Positions", "Chest Overlay", "Overlay Style",
                 "Items to Show", "Kuudra Profit Overlay", "Bonus Essence", "Profit per Hour Overlay",
-                "Tooltip Attribute Price Display", "Help, Bug Reports and Feature Suggestions", "Like this Mod?",
-                "Update AttributeMod");
+                "Tooltip Attribute Price Display", "Party Finder Stats", "Style",
+                "Help, Bug Reports and Feature Suggestions", "Like this Mod?", "Update AttributeMod");
 
         @Override
         public @NotNull Comparator<Category> getCategoryComparator() {

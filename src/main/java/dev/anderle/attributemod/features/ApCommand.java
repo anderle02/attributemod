@@ -178,7 +178,8 @@ public class ApCommand extends CommandBase {
      *                   "%%appearance%%" will be replaced with the clicked one.
      */
     private void decodeResponseAndSendText(JsonObject response, String newCommand) {
-        IChatComponent comp = ChatUtils.decodeToFancyChatMessage(response.get("text").getAsString());
+        ChatComponentText comp = new ChatComponentText(Constants.prefix);
+        ChatUtils.decodeToFancyChatMessage(comp, response.get("text").getAsString());
         JsonElement appearances = response.get("appearances");
         JsonElement currentAppearance = response.get("currentAppearance");
 

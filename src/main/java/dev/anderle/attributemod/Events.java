@@ -127,6 +127,8 @@ public class Events {
 
     @SubscribeEvent @SuppressWarnings("unused")
     public void onChat(ClientChatReceivedEvent e) {
+        if(!AttributeMod.config.modEnabled || !AttributeMod.config.partyFinderShowStats) return;
+
         Matcher matcher = KuudraStatsCommand.PARTY_JOIN_PATTERN.matcher(e.message.getUnformattedText());
         if(matcher.matches()) {
             String playerName = matcher.group(1);

@@ -7,9 +7,12 @@ import dev.anderle.attributemod.utils.ChatUtils;
 import dev.anderle.attributemod.utils.Constants;
 import gg.essential.lib.caffeine.cache.Cache;
 import gg.essential.lib.caffeine.cache.Caffeine;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
 import org.apache.http.client.HttpResponseException;
 
 import java.io.IOException;
@@ -19,8 +22,8 @@ import java.util.regex.Pattern;
 public class KuudraStatsCommand extends CommandBase {
     public static final Pattern PARTY_JOIN_PATTERN = Pattern.compile(
             "Party Finder > (.+) joined the group! \\(.*\\)");
-    public static final Cache<String, String> CACHE = Caffeine.newBuilder()
-            .expireAfterWrite(1, TimeUnit.HOURS)
+    public static final Cache<String, IChatComponent> CACHE = Caffeine.newBuilder()
+            .expireAfterWrite(1, TimeUnit.SECONDS)
             .maximumSize(100)
             .build();
 
@@ -43,26 +46,73 @@ public class KuudraStatsCommand extends CommandBase {
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
-        String ign = args.length == 0 ? AttributeMod.mc.thePlayer.getName() : args[0];
-        String cached = CACHE.getIfPresent(ign.toLowerCase());
-
-        if(cached != null) {
-            sender.addChatMessage(ChatUtils.decodeToFancyChatMessage(cached));
+        if(args.length > 1) {
+            wrongUsage(sender);
             return;
         }
 
-        AttributeMod.backend.sendGetRequest("/kuudrastats", "&ign=" + ign.toLowerCase(),
+        String ign = args.length == 0 ? AttributeMod.mc.thePlayer.getName() : args[0];
+        IChatComponent cached = CACHE.getIfPresent(ign.toLowerCase());
+
+        if(cached != null) {
+            sender.addChatMessage(cached);
+            return;
+        }
+
+        AttributeMod.backend.sendGetRequest(
+        "/kuudrastats",
+        "&ign=" + ign.toLowerCase() + "&style=" + AttributeMod.config.statsMessageStyle,
             (String result) -> {
                 JsonObject resultObj = new JsonParser().parse(result).getAsJsonObject();
+
                 String playerName = resultObj.getAsJsonPrimitive("ign").getAsString();
                 String text = resultObj.getAsJsonPrimitive("text").getAsString();
-                sender.addChatMessage(ChatUtils.decodeToFancyChatMessage(text));
-                CACHE.put(playerName.toLowerCase(), text);
+
+                IChatComponent chatComponent = getStatsMessage(text, playerName);
+                sender.addChatMessage(chatComponent);
+                CACHE.put(playerName.toLowerCase(), chatComponent);
             }, (IOException error) -> {
                 int statusCode = error instanceof HttpResponseException
                         ? ((HttpResponseException) error).getStatusCode() : 0;
                 sender.addChatMessage(ChatUtils.errorMessage(error.getMessage(),
                         statusCode == 0 || statusCode == 400));
             });
+    }
+
+    private IChatComponent getStatsMessage(String statsText, String playerString) {
+        ChatComponentText component = getChatLineSeparator(EnumChatFormatting.YELLOW + "Kuudra Stats for " + EnumChatFormatting.RED + playerString + EnumChatFormatting.YELLOW);
+        ChatUtils.decodeToFancyChatMessage(component, statsText);
+        return component.appendSibling(getChatLineSeparator(""));
+    }
+
+    public ChatComponentText getChatLineSeparator(String title) {
+        FontRenderer fontRenderer = AttributeMod.mc.fontRendererObj;
+
+        int chatWidth = AttributeMod.mc.ingameGUI.getChatGUI().getChatWidth();
+        int dashWidth = fontRenderer.getStringWidth("-");
+
+        if(title.isEmpty()) {
+            String dashes = new String(new char[chatWidth / dashWidth]).replace("\0", "-");
+            return new ChatComponentText(EnumChatFormatting.YELLOW + dashes);
+        }
+
+        int titleWidth = fontRenderer.getStringWidth(title) + 2 * fontRenderer.getCharWidth(' ');
+        int dashCount = (chatWidth - titleWidth) / dashWidth;
+
+        if(dashCount < 1) {
+            return new ChatComponentText(title);
+        }
+
+        int rightDashCount = dashCount / 2;
+        int leftDashCount = dashCount - rightDashCount;
+
+        String leftDashes = new String(new char[leftDashCount]).replace("\0", "-");
+        String rightDashes = new String(new char[rightDashCount]).replace("\0", "-");
+
+        return new ChatComponentText(EnumChatFormatting.YELLOW + leftDashes + " " + title + " " + EnumChatFormatting.YELLOW + rightDashes);
+    }
+
+    private void wrongUsage(ICommandSender sender) {
+        sender.addChatMessage(new ChatComponentText(getCommandUsage(sender)));
     }
 }
