@@ -62,6 +62,9 @@ Displays stats of teammates in Kuudra Party Finder.
 - a "buy next" button for `/au` when in the auction house
 ## Security Note
 This is the **only** way to download the Attribute Mod. It's hosted nowhere else than [here](https://github.com/anderle02/attributemod/releases/latest). Anyone trying to send you this mod **is trying to steal your account**, especially if it's "free".
+## Credits
+- The settings page was made using [Vigilance](https://github.com/EssentialGG/Vigilance). Clean look and easy to use, would definitely recommend!
+- I'm using the [1.8.9 Forge Mod Template](https://github.com/nea89o/Forge1.8.9Template) by nea89o. So good if you have no idea of how dependencies work...
 ## Join Kuudra Gang!
 Chat with fellow Skyblock and Kuudra gamers, or ask questions about the mod. You can try out my discord bot, which has way more features than this mod.
 
