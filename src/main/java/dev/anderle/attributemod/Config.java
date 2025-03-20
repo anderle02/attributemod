@@ -106,7 +106,7 @@ public class Config extends Vigilant {
     /** Profit Per Hour Display */
 
     @Property(type = PropertyType.SWITCH, name = "Profit per Hour Overlay", category = "Overlays",
-            description = "Show §cKuudra profit per hour§r on your screen. Requires the Kuudra Profit Overlay to be enabled.")
+            description = "Show §cKuudra profit per hour§r on your screen. Requires the Kuudra Profit Overlay to be enabled. Use §r/profittracker§c to manage.")
     public boolean profitPerHourEnabled = true;
 
     @Property(type = PropertyType.NUMBER, name = "Profit per Hour Overlay X", category = "Overlays", hidden = true)

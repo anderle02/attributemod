@@ -5,49 +5,56 @@ This is a lightweight mod, aiming to have the least impact on your FPS as possib
 This mod is **not public** and won't work without a **key**. Please visit [Kuudra Gang](https://discord.gg/kuudra) and run `/mod` for instructions on how to buy the mod.
 *I am still learning modding and I just don't have the capacity for too many users, I hope you will understand.*
 ## Features
-### Attribute Price Overlay
+### Note: Some features are not released yet (until March 22).
+
+All features can be configured using the settings GUI: `/attributemod` or `/am`.
+### Tooltip Attribute Price Overlay
 Shows attribute values and an estimated total value when hovering over an item with attributes. Prices are refreshed every minute.
 
-![](https://i.imgur.com/JSlnOr0.png)
-### Command `/attributeprice` or `/ap`
-Shows the cheapest items with an attribute. Works for armor, equipment, fishing items and weapons. You can hover over an item or **click to directly buy**.
-Basically, it works exactly the same as my discord bot.
+![](https://github.com/anderle02/attributemod/blob/master/images/tooltip_attribute_values.png)
+### Chest Value Overlay
+This overlay summarizes all items with attributes in a chest, including their price. Items get highlighted if you hover over the list, and if you click an item, your mouse will be automatically moved to that item.
+- Hold `Shift` to move the item directly to your inventory.
+- Copy your items to clipboard using the `[Copy]` button.
+- Choose between 5 different (compact or wide) overlay styles and choose the amount of displayed items with `/attributemod`.
+- **NEW:** The overlay now supports scrolling!
 
-**Usage:** `/ap <attribute1> [level]` or `/ap <attribute1> [level] <attribute2> [level]`
-Entering a level is optional. Use Minecraft's auto completion for faster use.
-
-![](https://i.imgur.com/JWGim2D.png)
-![](https://i.imgur.com/cqSwazs.png)
-### Command `/attributeupgrade` or `/au`
-Shows the cheapest way of upgrading an attribute on an item to a specific level. The command will show you all items needed to buy, and the total price. Usually, upgrading like this is way cheaper than directly buying a Level 10 piece.
-
-**Usage:** `/au <attribute> <item> <startlevel> <endlevel>`
-Use Minecraft's auto completion for attributes and items for faster use.
-
-![](https://i.imgur.com/Z0cEcbO.png)
-![](https://i.imgur.com/oupBn9Q.png)
-### Chest Overlay
-This overlay summarizes all items with attributes in a chest, including their price. Items get highlighted if you hover over the list, and if you click an item, your mouse will be automatically moved to that item. Hold `Shift` to move the item directly to your inventory.
-
-The overlay can be disabled with the `Tab` key and moved by holding your **middle** mouse button.
-
-NEW: **Copy to Clipboard** button and total value display!
+Watch the video:
 
 ![](https://github.com/anderle02/attributemod/blob/master/images/chest_overlay.gif)
-
-### Kuudra Profit Display
+### Kuudra Profit Overlay
 This overlay appears when you open a Kuudra reward chest.
-- lists items in the chest and their value
+- lists items in the chest including their value
 - shows Kismet Feather and Kuudra Key prices
 - **tells you if it's worth to reroll / claim a chest**
 
 ![](https://i.anderle.dev/pXsJFcIWJB.png)
 ![](https://i.anderle.dev/5261LwzP04.png)
+### Command `/attributeprice` or `/ap`
+Shows the cheapest items with an attribute. Works for armor, equipment, fishing items and weapons. You can hover over an item or **click to directly buy**.
+Basically, it works exactly the same as my discord bot.
 
+**Usage:** `/ap <attribute1> [level]` or `/ap <attribute1> [level] <attribute2> [level]`
+Entering a level is optional. Use Minecraft's auto-completion for faster use.
+
+![](https://github.com/anderle02/attributemod/blob/master/images/ap_1.png)
+![](https://github.com/anderle02/attributemod/blob/master/images/ap_2.png)
+### Command `/attributeupgrade` or `/au`
+Shows the cheapest way of upgrading an attribute on an item to a specific level. The command will show you all items needed to buy, and the total price. Usually, upgrading like this is way cheaper than directly buying a Level 10 piece.
+
+**Usage:** `/au <attribute> <item> <startlevel> <endlevel>`
+Use Minecraft's auto-completion for attributes and items for faster use.
+
+![](https://github.com/anderle02/attributemod/blob/master/images/au_1.png)
+![](https://github.com/anderle02/attributemod/blob/master/images/au_2.png)
+### Command `/kuudra`
+Shows Kuudra stats of any player. Has a `Normal` and `Compact` style.
+Displays stats of teammates in Kuudra Party Finder.
+
+![](https://github.com/anderle02/attributemod/blob/master/images/kuudra_command.png)
 ## Planned Features
-- `/kuudra` command that shows kuudra stats and items of a player
-- party finder viewer for `/kuudra`
-- a GUI: with more and more features being added it can get confusing without a place for all settings
+- `/upgradecost` command to easily upgrade items in the crimson essence shop
+- a "buy next" button for `/au` when in the auction house
 ## Security Note
 This is the **only** way to download the Attribute Mod. It's hosted nowhere else than [here](https://github.com/anderle02/attributemod/releases/latest). Anyone trying to send you this mod **is trying to steal your account**, especially if it's "free".
 ## Join Kuudra Gang!

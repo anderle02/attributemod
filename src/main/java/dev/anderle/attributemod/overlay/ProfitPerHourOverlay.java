@@ -65,6 +65,7 @@ public class ProfitPerHourOverlay extends HudOverlay {
         long time = totalTrackedTime + endTime - startTime;
         long profitPerHour = time == 0 ? 0 : totalProfit * 3600L / time;
         double chestsPerHour = time == 0 ? 0 : (double) (openedChests * 3600) / time;
+        double profitPerChest = (double) totalProfit / openedChests;
 
         content.clear();
         content.add(EnumChatFormatting.GOLD + Helper.formatNumber(profitPerHour) + EnumChatFormatting.YELLOW + " Profit / Hour");
@@ -72,6 +73,8 @@ public class ProfitPerHourOverlay extends HudOverlay {
         content.add(EnumChatFormatting.YELLOW + "Chests Opened: " + EnumChatFormatting.DARK_GREEN + Helper.formatNumber(openedChests)
                 + EnumChatFormatting.YELLOW + " (" + EnumChatFormatting.DARK_GREEN + Helper.formatNumber(chestsPerHour)
                 + EnumChatFormatting.YELLOW + " per hour)");
+        content.add(EnumChatFormatting.YELLOW + "Average: " + EnumChatFormatting.GOLD + Helper.formatNumber(profitPerChest)
+                + EnumChatFormatting.YELLOW + " / Chest");
         content.add(EnumChatFormatting.YELLOW + "Time Played: " + EnumChatFormatting.RED + formatSeconds(time)
                 + (isStopped ? EnumChatFormatting.YELLOW + " [" + EnumChatFormatting.RED + "Stopped" + EnumChatFormatting.YELLOW + "]" : ""));
 

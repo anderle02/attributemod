@@ -23,9 +23,11 @@ public class KuudraStatsCommand extends CommandBase {
     public static final Pattern PARTY_JOIN_PATTERN = Pattern.compile(
             "Party Finder > (.+) joined the group! \\(.*\\)");
     public static final Cache<String, IChatComponent> CACHE = Caffeine.newBuilder()
-            .expireAfterWrite(1, TimeUnit.SECONDS)
+            .expireAfterWrite(10, TimeUnit.MINUTES)
             .maximumSize(100)
             .build();
+
+    private int currentStyle = AttributeMod.config.statsMessageStyle;
 
     @Override
     public String getCommandName() {
@@ -54,14 +56,17 @@ public class KuudraStatsCommand extends CommandBase {
         String ign = args.length == 0 ? AttributeMod.mc.thePlayer.getName() : args[0];
         IChatComponent cached = CACHE.getIfPresent(ign.toLowerCase());
 
-        if(cached != null) {
+        // Get from cache if: Cached and message style wasn't changed.
+        if(cached != null && currentStyle == AttributeMod.config.statsMessageStyle) {
             sender.addChatMessage(cached);
             return;
         }
 
+        currentStyle = AttributeMod.config.statsMessageStyle;
+
         AttributeMod.backend.sendGetRequest(
         "/kuudrastats",
-        "&ign=" + ign.toLowerCase() + "&style=" + AttributeMod.config.statsMessageStyle,
+        "&ign=" + ign.toLowerCase() + "&style=" + currentStyle,
             (String result) -> {
                 JsonObject resultObj = new JsonParser().parse(result).getAsJsonObject();
 
