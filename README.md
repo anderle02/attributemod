@@ -20,6 +20,8 @@ This overlay summarizes all items with attributes in a chest, including their pr
 - **NEW:** The overlay now supports scrolling!
 
 Watch the video:
+https://github.com/user-attachments/assets/542d742f-b7c8-46d9-914a-b5b668e23d18
+
 
 ![](https://github.com/anderle02/attributemod/blob/master/images/chest_overlay.gif)
 ### Kuudra Profit Overlay
