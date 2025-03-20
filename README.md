@@ -30,6 +30,11 @@ This overlay appears when you open a Kuudra reward chest.
 
 ![](https://i.anderle.dev/pXsJFcIWJB.png)
 ![](https://i.anderle.dev/5261LwzP04.png)
+### Profit Per Hour Display
+Shows profit per hour and a few more interesting statistics when playing Kuudra.
+Manage the profit tracker with `/profittracker <start|stop|reset>`.
+
+![](https://github.com/anderle02/attributemod/blob/master/images/profit_per_hour.png)
 ### Command `/attributeprice` or `/ap`
 Shows the cheapest items with an attribute. Works for armor, equipment, fishing items and weapons. You can hover over an item or **click to directly buy**.
 Basically, it works exactly the same as my discord bot.
