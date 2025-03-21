@@ -120,9 +120,8 @@ public class Backend {
         String key = AttributeMod.config.modkey.trim();
         String uuid = Helper.getPlayerUUID();
 
-        URL url = new URL(URL + path + "?key=" + key + "&uuid=" + uuid + "&version=" + AttributeMod.VERSION + params);
-        System.out.println(url);
-        return url;
+        //System.out.println(url);
+        return new URL(URL + path + "?key=" + key + "&uuid=" + uuid + "&version=" + AttributeMod.VERSION + params);
     }
 
     /**
