@@ -65,7 +65,7 @@ public class ProfitPerHourOverlay extends HudOverlay {
         long time = totalTrackedTime + endTime - startTime;
         long profitPerHour = time == 0 ? 0 : totalProfit * 3600L / time;
         double chestsPerHour = time == 0 ? 0 : (double) (openedChests * 3600) / time;
-        double profitPerChest = (double) totalProfit / openedChests;
+        double profitPerChest = openedChests == 0 ? 0 : (double) totalProfit / openedChests;
 
         content.clear();
         content.add(EnumChatFormatting.GOLD + Helper.formatNumber(profitPerHour) + EnumChatFormatting.YELLOW + " Profit / Hour");
