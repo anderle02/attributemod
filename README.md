@@ -5,8 +5,6 @@ This is a lightweight mod, aiming to have the least impact on your FPS as possib
 This mod is **not public** and won't work without a **key**. Please visit [Kuudra Gang](https://discord.gg/kuudra) and run `/mod` for instructions on how to buy the mod.
 *I am still learning modding and I just don't have the capacity for too many users, I hope you will understand.*
 ## Features
-### Note: Some features are not released yet (until March 22).
-
 All features can be configured using the settings GUI: `/attributemod` or `/am`.
 ### Tooltip Attribute Price Overlay
 Shows attribute values and an estimated total value when hovering over an item with attributes. Prices are refreshed every minute.
