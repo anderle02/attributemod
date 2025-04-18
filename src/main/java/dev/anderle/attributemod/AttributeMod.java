@@ -32,6 +32,7 @@ public class AttributeMod {
 
     @Mod.EventHandler @SuppressWarnings("unused")
     public void preInit(FMLPreInitializationEvent event) {
+        deleteLegacyConfigFile(event.getModConfigurationDirectory());
         modFolder = event.getSourceFile().getParentFile();
     }
 
@@ -57,5 +58,12 @@ public class AttributeMod {
         scheduler.registerTasks();
 
         LOGGER.log(Level.INFO, "Attribute Mod Loaded!");
+    }
+
+    private void deleteLegacyConfigFile(File configDir) {
+        try {
+            boolean deleted = new File(configDir, "attributemod.cfg").delete();
+            if(deleted) LOGGER.info("Successfully deleted the old config file.");
+        } catch(Exception ignored) {}
     }
 }
