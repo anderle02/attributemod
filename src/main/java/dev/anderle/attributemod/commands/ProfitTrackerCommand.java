@@ -38,6 +38,11 @@ public class ProfitTrackerCommand extends CommandBase {
     public void processCommand(ICommandSender sender, String[] args) {
         if(tracker == null) getOverlayObject();
 
+        if(args.length == 0) {
+            sender.addChatMessage(new ChatComponentText(getCommandUsage(sender)));
+            return;
+        }
+
         switch(args[0].toLowerCase()) {
             case "start": tracker.start(); break;
             case "stop": tracker.stop(); break;

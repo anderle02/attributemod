@@ -19,8 +19,8 @@ public class ProfitPerHourOverlay extends HudOverlay {
     private long totalTrackedTime;
     private int openedChests;
 
-    private long startTime = 0;
-    private long endTime = 0;
+    private long lastUpdate = 0;
+
     private boolean isStopped = true;
     private boolean updatedOnce = false;
 
@@ -40,7 +40,7 @@ public class ProfitPerHourOverlay extends HudOverlay {
 
     @Override
     public boolean shouldRender(GuiScreen screen) {
-        return isEnabled() && screen == null;
+        return isEnabled();
     }
 
     @Override
@@ -53,18 +53,14 @@ public class ProfitPerHourOverlay extends HudOverlay {
 
     @Override
     protected void updateData(GuiScreen screen) {
-        if(isStopped) {
-            if(updatedOnce) return;
-            else {
-                startTime = System.currentTimeMillis() / 1000L;
-                updatedOnce = true;
-            }
-        }
+        if(isStopped && updatedOnce) return;
 
-        endTime = System.currentTimeMillis() / 1000L;
-        long time = totalTrackedTime + endTime - startTime;
-        long profitPerHour = time == 0 ? 0 : totalProfit * 3600L / time;
-        double chestsPerHour = time == 0 ? 0 : (double) (openedChests * 3600) / time;
+        long now = System.currentTimeMillis() / 1000L;
+        totalTrackedTime += lastUpdate == 0 ? 0 : now - lastUpdate;
+        lastUpdate = now;
+
+        long profitPerHour = totalTrackedTime == 0 ? 0 : totalProfit * 3600L / totalTrackedTime;
+        double chestsPerHour = totalTrackedTime == 0 ? 0 : (double) (openedChests * 3600) / totalTrackedTime;
         double profitPerChest = openedChests == 0 ? 0 : (double) totalProfit / openedChests;
 
         content.clear();
@@ -75,7 +71,7 @@ public class ProfitPerHourOverlay extends HudOverlay {
                 + EnumChatFormatting.YELLOW + " per hour)");
         content.add(EnumChatFormatting.YELLOW + "Average: " + EnumChatFormatting.GOLD + Helper.formatNumber(profitPerChest)
                 + EnumChatFormatting.YELLOW + " / Chest");
-        content.add(EnumChatFormatting.YELLOW + "Time Played: " + EnumChatFormatting.RED + formatSeconds(time)
+        content.add(EnumChatFormatting.YELLOW + "Time Played: " + EnumChatFormatting.RED + formatSeconds(totalTrackedTime)
                 + (isStopped ? EnumChatFormatting.YELLOW + " [" + EnumChatFormatting.RED + "Stopped" + EnumChatFormatting.YELLOW + "]" : ""));
 
         updatedOnce = true;
@@ -130,27 +126,26 @@ public class ProfitPerHourOverlay extends HudOverlay {
         totalProfit = 0;
         totalTrackedTime = 0;
         openedChests = 0;
+        lastUpdate = 0;
         updatedOnce = false;
-        startTime = System.currentTimeMillis() / 1000L;
-        endTime = System.currentTimeMillis() / 1000L;
     }
 
     public void start() {
         if(!isStopped) return;
-        startTime = System.currentTimeMillis() / 1000L;
         isStopped = false;
+        lastUpdate = 0;
     }
 
     public void stop() {
         if(isStopped) return;
-        endTime = System.currentTimeMillis() / 1000L;
         isStopped = true;
+        updatedOnce = false;
     }
 
     private void saveProfitToConfig() {
         AttributeMod.config.totalOpenedChests = openedChests;
         AttributeMod.config.totalProfitK = (int) (totalProfit / 1000L);
-        AttributeMod.config.totalProfitTime = (int) (totalTrackedTime + endTime - startTime);
+        AttributeMod.config.totalProfitTime = (int) (totalTrackedTime);
 
         AttributeMod.config.markDirty();
     }
