@@ -5,14 +5,12 @@ import com.google.gson.JsonParser;
 import dev.anderle.attributemod.AttributeMod;
 import dev.anderle.attributemod.utils.ChatUtils;
 import dev.anderle.attributemod.utils.Constants;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 
 import java.io.IOException;
 
@@ -24,10 +22,8 @@ public class OneTimeMessage {
 
     private boolean sent = false;
 
-    public void onWorldJoin(EntityJoinWorldEvent e) {
+    public void onWorldLoad() {
         if(sent) return;
-        if(!e.entity.equals(Minecraft.getMinecraft().thePlayer)) return;
-        EntityPlayerSP player = (EntityPlayerSP) e.entity;
         sent = true;
 
         AttributeMod.backend.sendGetRequest("/onetimemessage", "",
@@ -36,6 +32,7 @@ public class OneTimeMessage {
                 boolean isWhitelisted = responseObject.get("whitelisted").getAsBoolean();
                 String latestVersion = responseObject.get("latest").getAsString();
                 String downloadLink = responseObject.get("download").getAsString();
+                EntityPlayerSP player = AttributeMod.mc.thePlayer;
 
                 if(isWhitelisted) {
                     if(latestVersion.equals(AttributeMod.VERSION)) return;

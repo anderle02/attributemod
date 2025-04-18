@@ -3,9 +3,14 @@ package dev.anderle.attributemod.utils;
 import com.google.gson.*;
 import dev.anderle.attributemod.AttributeMod;
 import net.minecraft.nbt.*;
+import net.minecraft.scoreboard.Score;
+import net.minecraft.scoreboard.ScoreObjective;
+import net.minecraft.scoreboard.ScorePlayerTeam;
+import net.minecraft.scoreboard.Scoreboard;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.DecimalFormat;
+import java.util.Collection;
 
 public class Helper {
     /** Nicely format any number. */
@@ -109,5 +114,24 @@ public class Helper {
     /** Ensures the value x is inside max and min. */
     public static int withLimits(int value, int max, int min) {
         return Math.max(Math.min(value, max), min);
+    }
+
+    /** Returns the current Kuudra tier as a char from '1' to '5'. '0' if not in Kuudra. */
+    public static char getKuudraTier(Scoreboard scoreboard) {
+        try { // I have no idea how the scoreboard works so I just try catch everything.
+            ScoreObjective sidebarObjective = scoreboard.getObjectiveInDisplaySlot(1);
+            Collection<Score> scores = scoreboard.getSortedScores(sidebarObjective);
+            System.out.println(scores.size());
+            for(Score score : scores) {
+                ScorePlayerTeam team = scoreboard.getPlayersTeam(score.getPlayerName());
+                String scoreboardLine = ScorePlayerTeam.formatPlayerName(team, score.getPlayerName()).trim();
+                if(scoreboardLine.contains("Kuudra's ")) {
+                    return scoreboardLine.charAt(scoreboardLine.length() - 2);
+                }
+            }
+        } catch(Exception e) {
+            AttributeMod.LOGGER.error("Error getting Kuudra Tier from Scoreboard.", e);
+        }
+        return '0';
     }
 }

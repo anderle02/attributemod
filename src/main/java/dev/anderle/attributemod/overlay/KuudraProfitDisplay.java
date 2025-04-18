@@ -11,9 +11,6 @@ import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.inventory.ContainerChest;
 import net.minecraft.inventory.Slot;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.scoreboard.Score;
-import net.minecraft.scoreboard.ScoreObjective;
-import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import org.lwjgl.opengl.GL11;
@@ -21,7 +18,6 @@ import org.lwjgl.opengl.GL11;
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class KuudraProfitDisplay extends ChestOverlay {
@@ -158,9 +154,11 @@ public class KuudraProfitDisplay extends ChestOverlay {
             chestItems.add(nbt);
         }
 
+        Scoreboard scoreboard = AttributeMod.mc.theWorld.getScoreboard();
+
         AttributeMod.backend.sendPostRequest(
                 "/kuudrachest",
-                "&tier=" + getKuudraTier() + "&bonusessence=" + AttributeMod.config.essenceBonus,
+                "&tier=" + Helper.getKuudraTier(scoreboard) + "&bonusessence=" + AttributeMod.config.essenceBonus,
                 chestItems.toString(),
                 (String response) -> {
                     content.clear();
@@ -173,25 +171,5 @@ public class KuudraProfitDisplay extends ChestOverlay {
                         }
                     }
                 }, (IOException error) -> AttributeMod.LOGGER.error("Failed fetching from /kuudrachest." , error));
-    }
-
-    private char getKuudraTier() {
-        try { // I have no idea how the scoreboard works so I just try catch everything.
-            Scoreboard scoreboard = AttributeMod.mc.theWorld.getScoreboard();
-            ScoreObjective sidebarObjective = scoreboard.getObjectiveInDisplaySlot(1);
-            Collection<Score> scores = scoreboard.getSortedScores(sidebarObjective);
-            for(Score score : scores) {
-                ScorePlayerTeam team = scoreboard.getPlayersTeam(score.getPlayerName());
-                String scoreboardLine = ScorePlayerTeam.formatPlayerName(team, score.getPlayerName()).trim();
-                if(scoreboardLine.contains("Kuudra's ")) {
-                    return scoreboardLine.charAt(scoreboardLine.length() - 2);
-                }
-            }
-        } catch(Exception e) {
-            AttributeMod.LOGGER.error("Error getting Kuudra Tier from Scoreboard.", e);
-        }
-        // Should not happen because those chests should always be in Kuudra.
-        // Will result in "400 Bad Request".
-        return '0';
     }
 }

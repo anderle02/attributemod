@@ -109,6 +109,10 @@ public class Config extends Vigilant {
             description = "Show §cKuudra profit per hour§r on your screen. Requires the Kuudra Profit Overlay to be enabled. Use §r/profittracker§c to manage.")
     public boolean profitPerHourEnabled = true;
 
+    @Property(type = PropertyType.SWITCH, name = "Automatic Profit Tracker", category = "Overlays",
+            description = "§cAutomatically start and stop the profit tracker§r when joining or leaving Kuudra.")
+    public boolean autoProfitTracker = false;
+
     @Property(type = PropertyType.NUMBER, name = "Profit per Hour Overlay X", category = "Overlays", hidden = true)
     public int profitPerHourX = 0;
 
@@ -183,8 +187,8 @@ public class Config extends Vigilant {
         private final List<String> categories = Arrays.asList("Overlays", "Kuudra Stats", "Activation", "Links");
         private final List<String> settings = Arrays.asList( // Yeah, I actually listed all settings in the correct order...
                 "Enable this Mod", "Mod Key", "Edit Overlay Positions", "Chest Overlay", "Overlay Style",
-                "Items to Show", "Kuudra Profit Overlay", "Bonus Essence", "Profit per Hour Overlay",
-                "Tooltip Attribute Price Display", "Party Finder Stats", "Style",
+                "Items to Show", "Kuudra Profit Overlay", "Profit per Hour Overlay",
+                "Automatic Profit Tracker", "Bonus Essence", "Tooltip Attribute Price Display", "Party Finder Stats", "Style",
                 "Help, Bug Reports and Feature Suggestions", "Like this Mod?", "Update AttributeMod");
 
         @Override
@@ -205,6 +209,7 @@ public class Config extends Vigilant {
         addDependency("overlayStyle", "chestOverlayEnabled");
         addDependency("profitPerHourEnabled", "kuudraChestOverlayEnabled");
         addDependency("essenceBonus", "kuudraChestOverlayEnabled");
+        addDependency("autoProfitTracker", "kuudraChestOverlayEnabled");
     }
 
     /* --------------------------------------------------------------------------------------------------------- */

@@ -5,6 +5,7 @@ import dev.anderle.attributemod.utils.Helper;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.world.World;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
@@ -120,6 +121,19 @@ public class ProfitPerHourOverlay extends HudOverlay {
         if(isStopped) return;
         totalProfit += profit;
         openedChests++;
+    }
+
+    public void onWorldLoad(World world) {
+        if(!AttributeMod.config.autoProfitTracker) return;
+
+        new Thread(() -> { // Wait a second for the scoreboard to load, then get the kuudra tier.
+            try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+            AttributeMod.mc.addScheduledTask(() -> {
+                char kuudraTier = Helper.getKuudraTier(world.getScoreboard());
+                if(kuudraTier == '0') stop();
+                else start();
+            });
+        }).start();
     }
 
     public void reset() {

@@ -10,8 +10,8 @@ import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.input.Mouse;
@@ -110,9 +110,13 @@ public class Events {
     }
 
     @SubscribeEvent @SuppressWarnings("unused")
-    public void onWorldJoin(EntityJoinWorldEvent e) {
+    public void onWorldLoad(WorldEvent.Load e) {
         if(AttributeMod.config.modEnabled) {
-            oneTimeMessage.onWorldJoin(e);
+            oneTimeMessage.onWorldLoad();
+
+            Overlay.ALL.stream()
+                    .filter(o -> o instanceof ProfitPerHourOverlay).findFirst()
+                    .ifPresent(o -> ((ProfitPerHourOverlay) o).onWorldLoad(e.world));
         }
     }
 
