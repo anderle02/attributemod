@@ -48,7 +48,7 @@ public class ProfitPerHourOverlay extends HudOverlay {
     public Dimension getSize() {
         return new Dimension(
                 (int) (MAX_WIDTH * scale / 100),
-                (int) (4 * (AttributeMod.mc.fontRendererObj.FONT_HEIGHT + 1) * scale / 100)
+                (int) (5 * (AttributeMod.mc.fontRendererObj.FONT_HEIGHT + 1) * scale / 100)
         );
     }
 

@@ -32,6 +32,8 @@ This overlay appears when you open a Kuudra reward chest.
 Shows profit per hour and a few more interesting statistics when playing Kuudra.
 Manage the profit tracker with `/profittracker <start|stop|reset>`.
 
+OR: Let the tracker only count the time when you are in Kuudra.
+
 ![](https://github.com/anderle02/attributemod/blob/master/images/profit_per_hour.png)
 ### Command `/attributeprice` or `/ap`
 Shows the cheapest items with an attribute. Works for armor, equipment, fishing items and weapons. You can hover over an item or **click to directly buy**.
