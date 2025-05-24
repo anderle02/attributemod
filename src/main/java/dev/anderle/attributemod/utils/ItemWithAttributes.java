@@ -42,6 +42,10 @@ public class ItemWithAttributes {
                 Attribute temp = firstAttribute;
                 firstAttribute = secondAttribute;
                 secondAttribute = temp;
+
+                int tempLevel = firstLevel;
+                firstLevel = secondLevel;
+                secondLevel = tempLevel;
             }
         }
     }
