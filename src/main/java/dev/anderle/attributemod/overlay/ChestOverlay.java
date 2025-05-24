@@ -1,6 +1,5 @@
 package dev.anderle.attributemod.overlay;
 
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.inventory.Slot;
 import net.minecraftforge.client.event.GuiScreenEvent;
@@ -33,12 +32,17 @@ public abstract class ChestOverlay extends Overlay {
     /** Called every GuiScreenEvent.DrawScreenEvent. Used for highlighting chest slots (so it doesn't show above the item). */
     public abstract void onDrawForeground(GuiChest chest);
 
-    public void highlightSlot(Slot slot, GuiScreen screen) {
-        Point slotPos = new Point(
-                (screen.width - CHEST_GUI_WIDTH) / 2 + slot.xDisplayPosition,
-                (screen.height - CHEST_GUI_HEIGHT) / 2 + slot.yDisplayPosition - 1);
-        GuiChest.drawRect(slotPos.x, slotPos.y,
-                slotPos.x + SLOT_SIZE, slotPos.y + SLOT_SIZE,
-                0xff00aa00);
+    /** Returns the top left position of this slot relative to the GuiChest screen. */
+    public Point getSlotPos(Slot slot, GuiChest gui) {
+        int missingRows = 10 - gui.inventorySlots.inventorySlots.size() / 9;
+
+        return new Point(
+                (gui.width - CHEST_GUI_WIDTH) / 2 + slot.xDisplayPosition,
+                (gui.height - CHEST_GUI_HEIGHT + missingRows * (SLOT_SIZE + 2)) / 2 + slot.yDisplayPosition - 1
+        );
+    }
+
+    public void highlightSlot(Point slotPos) {
+        GuiChest.drawRect(slotPos.x, slotPos.y, slotPos.x + SLOT_SIZE, slotPos.y + SLOT_SIZE, 0xff00aa00);
     }
 }

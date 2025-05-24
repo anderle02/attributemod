@@ -54,10 +54,10 @@ public class ChestItemDisplay extends ChestOverlay {
         if(copyButtonFocused) { copyToClipboard(); return; }
         if(hoveredItem == -1) return;
 
-        Slot slot = itemSlotMapping.get(hoveredItem);
+        Point slotPos = getSlotPos(itemSlotMapping.get(hoveredItem), (GuiChest) e.gui);
         Mouse.setCursorPosition(
-                ((e.gui.width - CHEST_GUI_WIDTH) / 2 + slot.xDisplayPosition + SLOT_SIZE / 2) * e.gui.mc.displayWidth / e.gui.width,
-                (e.gui.height - ((e.gui.height - CHEST_GUI_HEIGHT) / 2 + slot.yDisplayPosition + SLOT_SIZE / 2 - 1)) * e.gui.mc.displayHeight / e.gui.height
+                (slotPos.x + SLOT_SIZE / 2) * e.gui.mc.displayWidth / e.gui.width,
+                (e.gui.height - (slotPos.y + SLOT_SIZE / 2 - 1)) * e.gui.mc.displayHeight / e.gui.height
         );
 
         if(!Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && e.isCancelable()) e.setCanceled(true);
@@ -101,7 +101,7 @@ public class ChestItemDisplay extends ChestOverlay {
     /** When the foreground layer is drawn, highlight the slot of `hoveredItem`, if needed. */
     public @Override void onDrawForeground(GuiChest chest) {
         if(hoveredItem != -1) {
-            highlightSlot(itemSlotMapping.get(hoveredItem), chest);
+            highlightSlot(getSlotPos(itemSlotMapping.get(hoveredItem), chest));
         }
     }
 
