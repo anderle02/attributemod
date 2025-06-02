@@ -1,6 +1,7 @@
 package dev.anderle.attributemod;
 
 import dev.anderle.attributemod.api.OneTimeMessage;
+import dev.anderle.attributemod.commands.AuCommand;
 import dev.anderle.attributemod.commands.KuudraStatsCommand;
 import dev.anderle.attributemod.overlay.*;
 import net.minecraft.client.gui.inventory.GuiChest;
@@ -13,6 +14,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.input.Mouse;
 
@@ -136,6 +138,15 @@ public class Events {
             String playerName = matcher.group(1);
             if(playerName.equals(AttributeMod.mc.thePlayer.getName())) return;
             ClientCommandHandler.instance.executeCommand(AttributeMod.mc.thePlayer, "/kuudra " + playerName);
+        }
+    }
+
+    @SubscribeEvent @SuppressWarnings("unused")
+    public void onKeyPress(InputEvent.KeyInputEvent e) {
+        if(!AttributeMod.config.modEnabled) return;
+        if(AuCommand.auBuyNextKey.isKeyDown() && AttributeMod.mc.thePlayer != null) {
+            AttributeMod.commands.stream().filter(c -> c instanceof AuCommand).findAny()
+                    .ifPresent(c -> ((AuCommand) c).openNextAuction());
         }
     }
 

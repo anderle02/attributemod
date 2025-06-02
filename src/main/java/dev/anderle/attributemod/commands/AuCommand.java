@@ -8,6 +8,7 @@ import dev.anderle.attributemod.utils.Helper;
 import dev.anderle.attributemod.utils.ChatUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiNewChat;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -16,6 +17,7 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.client.HttpResponseException;
+import org.lwjgl.input.Keyboard;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,11 +26,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class AuCommand extends CommandBase {
+    public static KeyBinding auBuyNextKey = new KeyBinding("Buy next item from /au", Keyboard.KEY_N, "Attribute Mod");
+
     /**
      * GuiNewChat used to reflect and get all chat lines to check for recent responses and delete them.
      * Initialized when the command is executed the first time.
      */
     private GuiNewChat chat;
+
+    /** Saves all items displayed when /au was executed. Used to make the "next" hotkey work. */
+    private final List<String> lastAuItemsToBuy = new ArrayList<>();
+    private int lastAuItemsToBuyIndex = 0;
 
     @Override
     public String getCommandName() {
@@ -92,6 +100,19 @@ public class AuCommand extends CommandBase {
         }
     }
 
+    public void openNextAuction() {
+        if(lastAuItemsToBuyIndex >= lastAuItemsToBuy.size() - 1) {
+            AttributeMod.mc.thePlayer.addChatMessage(new ChatComponentText(Constants.prefix +
+                    EnumChatFormatting.YELLOW + "No data! Run " + EnumChatFormatting.GOLD + "/au " +
+                    EnumChatFormatting.YELLOW + "to start buying. To " + EnumChatFormatting.RED + "change " +
+                    EnumChatFormatting.YELLOW + "this Keybinding, visit the Minecraft controls."
+            ));
+        } else {
+            AttributeMod.mc.thePlayer.sendChatMessage("/viewauction " + lastAuItemsToBuy.get(lastAuItemsToBuyIndex + 1));
+            lastAuItemsToBuyIndex++;
+        }
+    }
+
     /** Get result from api and send it to the chat. */
     private void showResult(final ICommandSender sender, String attribute, String item, int from, int to) {
         AttributeMod.backend.sendGetRequest(
@@ -101,6 +122,7 @@ public class AuCommand extends CommandBase {
                     ChatComponentText component = new ChatComponentText(Constants.prefix);
                     ChatUtils.decodeToFancyChatMessage(component, new JsonParser().parse(response).getAsJsonObject().get("text").getAsString());
                     ChatUtils.resendChatMessage(this.chat, component);
+                    updateItemsToBuy(response);
                 },
                 (IOException error) -> {
                     int statusCode = error instanceof HttpResponseException
@@ -108,6 +130,15 @@ public class AuCommand extends CommandBase {
                     sender.addChatMessage(ChatUtils.errorMessage(error.getMessage(),
                             statusCode == 0 || statusCode == 400));
                 });
+    }
+
+    private void updateItemsToBuy(String raw) {
+        lastAuItemsToBuy.clear();
+        lastAuItemsToBuyIndex = 0;
+        for(String part : raw.split("#i")) {
+            String uuid = part.split("#")[0];
+            lastAuItemsToBuy.add(uuid);
+        }
     }
 
     /** Send a chat message to the sender that the command usage is wrong. */
