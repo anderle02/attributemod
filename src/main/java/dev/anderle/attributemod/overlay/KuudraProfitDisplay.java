@@ -39,6 +39,7 @@ public class KuudraProfitDisplay extends ChestOverlay {
 
     @Override
     public void onGuiOpen(GuiChest chest) {
+        content.clear();
         new Thread(() -> {
             try {
                 Thread.sleep(200);
