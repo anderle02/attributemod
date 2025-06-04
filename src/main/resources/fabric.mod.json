@@ -1,0 +1,28 @@
+{
+	"schemaVersion": 1,
+	"id": "attributemod",
+	"version": "${version}",
+	"name": "Attribute Mod",
+	"description": "Determines the price of attributes on your items.",
+	"authors": [
+		"anderle02"
+	],
+	"contact": {
+		"homepage": "https://anderle.dev/",
+		"sources": "https://github.com/anderle02/attributemod"
+	},
+	"license": "GNU GPL v3.0",
+	"icon": "assets/attributemod/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"dev.anderle.attributemod.AttributeMod"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.16.14",
+		"minecraft": "~1.21.5",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
