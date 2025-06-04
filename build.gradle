@@ -12,7 +12,7 @@ base {
 
 repositories {
 	maven { url = "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1" }
-	maven { url = "https://repo.essential.gg/repository/maven-public" }
+	maven { url = "https://repo.essential.gg/public" }
 }
 
 dependencies {
@@ -24,10 +24,14 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	// DevAuth. Used to authenticate when in dev env.
+	// DevAuth, used to authenticate when in dev env.
 	modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:${version}") {
 		exclude(module: "fabric-loader") // Stop DevAuth from including an old fabric-loader that causes a crash.
 	}
+
+	// Vigilance, used for the config GUI (requires universalcraft).
+	implementation(include("gg.essential:vigilance:306"))
+	modImplementation(include("gg.essential:universalcraft-1.21.5-fabric:401"))
 }
 
 processResources {
@@ -57,23 +61,5 @@ jar {
 
 	from("LICENSE") {
 		rename { "${it}_${inputs.properties.archivesName}"}
-	}
-}
-
-// configure the maven publication
-publishing {
-	publications {
-		create("mavenJava", MavenPublication) {
-			artifactId = project.archives_base_name
-			from components.java
-		}
-	}
-
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-	repositories {
-		// Add repositories to publish to here.
-		// Notice: This block does NOT have the same function as the block in the top level.
-		// The repositories here will be used for publishing your artifact, not for
-		// retrieving dependencies.
 	}
 }
