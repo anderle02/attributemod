@@ -29,6 +29,9 @@ dependencies {
 	// Vigilance, used for the config GUI (requires universalcraft).
 	implementation(include("gg.essential:vigilance:306"))
 	modImplementation(include("gg.essential:universalcraft-1.21.5-fabric:401"))
+
+	// Kotlin, required for Vigilance. Do not bundle it and require the user to install it, since many mods require it.
+	modImplementation("net.fabricmc:fabric-language-kotlin:1.13.3+kotlin.2.1.21")
 }
 
 processResources {
