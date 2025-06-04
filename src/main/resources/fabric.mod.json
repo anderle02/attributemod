@@ -15,7 +15,7 @@
 	"icon": "assets/attributemod/icon.png",
 	"environment": "*",
 	"entrypoints": {
-		"main": [
+		"client": [
 			"dev.anderle.attributemod.AttributeMod"
 		]
 	},
