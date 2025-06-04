@@ -3,17 +3,17 @@
 	"id": "attributemod",
 	"version": "${version}",
 	"name": "Attribute Mod",
-	"description": "Determines the price of attributes on your items.",
+	"description": "\\u00a7eDetermines the \\u00a76price of attributes \\u00a7eon your items.",
 	"authors": [
-		"anderle02"
+		"\\u00a75anderle"
 	],
 	"contact": {
 		"homepage": "https://anderle.dev/",
-		"sources": "https://github.com/anderle02/attributemod"
+		"sources": "https://attributemod.anderle.dev/"
 	},
 	"license": "GNU GPL v3.0",
 	"icon": "assets/attributemod/icon.png",
-	"environment": "*",
+	"environment": "client",
 	"entrypoints": {
 		"client": [
 			"dev.anderle.attributemod.AttributeMod"
@@ -22,7 +22,14 @@
 	"depends": {
 		"fabricloader": ">=0.16.14",
 		"minecraft": "~1.21.5",
-		"java": ">=21",
-		"fabric-api": "*"
+		"java": ">=21"
+	},
+	"custom": {
+		"modmenu": {
+			"links": {
+				"Discord": "https://kuudragang.anderle.dev/"
+			},
+			"update_checker": false
+		}
 	}
 }

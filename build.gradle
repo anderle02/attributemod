@@ -21,9 +21,6 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
 	// DevAuth, used to authenticate when in dev env.
 	modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:${version}") {
 		exclude(module: "fabric-loader") // Stop DevAuth from including an old fabric-loader that causes a crash.
