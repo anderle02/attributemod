@@ -1,9 +1,11 @@
 package dev.anderle.attributemod;
 
 import dev.anderle.attributemod.api.Backend;
+import dev.anderle.attributemod.commands.SettingsCommand;
 import dev.anderle.attributemod.utils.Scheduler;
 import net.fabricmc.api.ClientModInitializer;
 
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.MinecraftClient;
@@ -34,6 +36,10 @@ public class AttributeMod implements ClientModInitializer {
 		mc = MinecraftClient.getInstance();
 
 		// Commands
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+			new SettingsCommand(dispatcher);
+		});
+
 		// Events
 
 		scheduler.registerTasks();

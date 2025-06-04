@@ -21,6 +21,9 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
+	// Fabric API. This is technically optional, but you probably want it anyway.
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
 	// DevAuth, used to authenticate when in dev env.
 	modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:${version}") {
 		exclude(module: "fabric-loader") // Stop DevAuth from including an old fabric-loader that causes a crash.
@@ -29,6 +32,7 @@ dependencies {
 	// Vigilance, used for the config GUI (requires universalcraft).
 	implementation(include("gg.essential:vigilance:306"))
 	modImplementation(include("gg.essential:universalcraft-1.21.5-fabric:401"))
+	modImplementation(include("gg.essential:elementa:704")) // Force Vigilance to pull the latest elementa version (it still pulls an old one which is not supported in 1.21.5).
 
 	// Kotlin, required for Vigilance. Do not bundle it and require the user to install it, since many mods require it.
 	modImplementation("net.fabricmc:fabric-language-kotlin:1.13.3+kotlin.2.1.21")
