@@ -50,6 +50,7 @@ Shows the cheapest way of upgrading an attribute on an item to a specific level.
 **Usage:** `/au <attribute> <item> <startlevel> <endlevel>`
 Use Minecraft's auto-completion for attributes and items for faster use.
 
+**New:** Hotkey guiding you through all items to buy and openening the auction!
 ![](https://github.com/anderle02/attributemod/blob/master/images/au_1.png)
 ![](https://github.com/anderle02/attributemod/blob/master/images/au_2.png)
 ### Command `/kuudra`
@@ -59,7 +60,6 @@ Displays stats of teammates in Kuudra Party Finder.
 ![](https://github.com/anderle02/attributemod/blob/master/images/kuudra_command.png)
 ## Planned Features
 - `/upgradecost` command to easily upgrade items in the crimson essence shop
-- a "buy next" button for `/au` when in the auction house
 ## Security Note
 This is the **only** way to download the Attribute Mod. It's hosted nowhere else than [here](https://github.com/anderle02/attributemod/releases/latest). Anyone trying to send you this mod **is trying to steal your account**, especially if it's "free".
 ## Credits
