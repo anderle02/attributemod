@@ -47,42 +47,6 @@ public class Config extends Vigilant {
         }
     }
 
-    /** Chest Item Display */
-
-    @Property(type = PropertyType.SWITCH, name = "Chest Overlay", category = "Overlays",
-            description = "Show an overlay for chests that contain items with attributes.")
-    public boolean chestOverlayEnabled = true;
-
-    public enum OverlayStyle { ITEM_NAMES_ONLY, SHORT_ATTRIBUTES_POPULAR,
-        SHORT_ATTRIBUTES_ALL, LONG_ATTRIBUTES_POPULAR, LONG_ATTRIBUTES_ALL }
-
-    @Property(
-            type = PropertyType.SELECTOR, name = "Overlay Style", category = "Overlays",
-            description = "Choose the §cstyle of your chest overlay§r, so it fits better on your screen.",
-            options = {
-                    "item names only §c(SMALLEST)§r",
-                    "short attribute names, only popular attributes",
-                    "short attribute names, all attributes",
-                    "long attribute names, only popular attributes",
-                    "long attribute names, all attributes §c(LARGEST)§r"
-            }
-    )
-    public int overlayStyle = OverlayStyle.SHORT_ATTRIBUTES_ALL.ordinal(); // Would use the enum but Vigilance doesn't like that.
-
-    @Property(type = PropertyType.SLIDER, name = "Items to Show", category = "Overlays", min = 1, max = 54,
-            description = "Max amount of §chow many items to show§r in the chest overlay." +
-                    "\nIf there are more items in the chest, you can §cscroll to view them§r!")
-    public int chestOverlayItemsToShow = 20;
-
-    @Property(type = PropertyType.NUMBER, name = "Chest Overlay X", category = "Overlays", hidden = true)
-    public int chestOverlayX = 0;
-
-    @Property(type = PropertyType.NUMBER, name = "Chest Overlay Y", category = "Overlays", hidden = true)
-    public int chestOverlayY = 0;
-
-    @Property(type = PropertyType.NUMBER, name = "Chest Overlay Scale in %", category = "Overlays", hidden = true)
-    public int chestOverlayScale = 100;
-
     /** Kuudra Reward Chest Display */
 
     @Property(type = PropertyType.SWITCH, name = "Kuudra Profit Overlay", category = "Overlays",
@@ -102,6 +66,10 @@ public class Config extends Vigilant {
             maxF = 20.0F,
             description = "Your §cKuudra Pet§r may give you §6extra essence§r!\nEnter the percentage here for a §ccorrect Kuudra Profit value§r.")
     public float essenceBonus = 0;
+
+    @Property(type = PropertyType.CHECKBOX, name = "Insta Sell Kuudra Profit", category = "Overlays",
+            description = "Enable this option to display §cinsta-sell§r prices for Kuudra rewards, instead of sell offers.")
+    public boolean instaSellKuudraProfit = true;
 
     /** Profit Per Hour Display */
 
@@ -130,12 +98,6 @@ public class Config extends Vigilant {
 
     @Property(type = PropertyType.NUMBER, name = "Total Tracked Kuudra Profit Time", category = "Overlays", hidden = true)
     public int totalProfitTime = 0;
-
-    /** Tooltip Attribute Price */
-
-    @Property(type = PropertyType.SWITCH, name = "Tooltip Attribute Price Display", category = "Overlays",
-            description = "Show attribute prices directly §cnext to the attributes§r on item tooltips.")
-    public boolean tooltipAttributePriceEnabled = true;
 
     /* ---------------------------------------------- KUUDRA STATS --------------------------------------------- */
 
@@ -186,9 +148,8 @@ public class Config extends Vigilant {
     public static class Sorting extends SortingBehavior {
         private final List<String> categories = Arrays.asList("Overlays", "Kuudra Stats", "Activation", "Links");
         private final List<String> settings = Arrays.asList( // Yeah, I actually listed all settings in the correct order...
-                "Enable this Mod", "Mod Key", "Edit Overlay Positions", "Chest Overlay", "Overlay Style",
-                "Items to Show", "Kuudra Profit Overlay", "Profit per Hour Overlay",
-                "Automatic Profit Tracker", "Bonus Essence", "Tooltip Attribute Price Display", "Party Finder Stats", "Style",
+                "Enable this Mod", "Mod Key", "Edit Overlay Positions", "Kuudra Profit Overlay", "Profit per Hour Overlay",
+                "Automatic Profit Tracker", "Bonus Essence", "Insta Sell Kuudra Profit", "Party Finder Stats", "Style",
                 "Help, Bug Reports and Feature Suggestions", "Like this Mod?", "Update AttributeMod");
 
         @Override
@@ -205,10 +166,9 @@ public class Config extends Vigilant {
     /** Dependencies */
 
     private void configureDependencies() {
-        addDependency("chestOverlayItemsToShow", "chestOverlayEnabled");
-        addDependency("overlayStyle", "chestOverlayEnabled");
         addDependency("profitPerHourEnabled", "kuudraChestOverlayEnabled");
         addDependency("essenceBonus", "kuudraChestOverlayEnabled");
+        addDependency("instaSellKuudraProfit", "kuudraChestOverlayEnabled");
         addDependency("autoProfitTracker", "kuudraChestOverlayEnabled");
     }
 

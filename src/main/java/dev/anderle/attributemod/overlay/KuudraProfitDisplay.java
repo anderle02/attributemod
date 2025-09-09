@@ -159,7 +159,8 @@ public class KuudraProfitDisplay extends ChestOverlay {
 
         AttributeMod.backend.sendPostRequest(
                 "/kuudrachest",
-                "&tier=" + Helper.getKuudraTier(scoreboard) + "&bonusessence=" + AttributeMod.config.essenceBonus,
+                "&tier=" + Helper.getKuudraTier(scoreboard) + "&bonusessence=" + AttributeMod.config.essenceBonus
+                + "&insta=" + AttributeMod.config.instaSellKuudraProfit,
                 chestItems.toString(),
                 (String response) -> {
                     content.clear();

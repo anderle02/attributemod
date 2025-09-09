@@ -11,6 +11,7 @@ This overlay appears when you open a Kuudra reward chest.
 - lists items in the chest including their value
 - shows Kismet Feather and Kuudra Key prices
 - **tells you if it's worth to reroll / claim a chest**
+- NEW: select if you want to insta-sell your rewards or use sell offers
 
 ![](https://i.anderle.dev/pXsJFcIWJB.png)
 ![](https://i.anderle.dev/5261LwzP04.png)
