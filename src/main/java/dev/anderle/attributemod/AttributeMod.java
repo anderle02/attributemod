@@ -24,7 +24,7 @@ import java.util.List;
 public class AttributeMod {
     public static final String NAME = "Attribute Mod";
     public static final String MODID = "attributemod";
-    public static final String VERSION = "1.2.1";
+    public static final String VERSION = "1.2.3";
     public static final Logger LOGGER = LogManager.getLogger(MODID);
 
     public static List<ICommand> commands;

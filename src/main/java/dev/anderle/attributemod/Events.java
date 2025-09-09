@@ -11,7 +11,6 @@ import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
@@ -23,14 +22,12 @@ import java.util.regex.Matcher;
 public class Events {
     // Some objects that respond to events are initialized here, to avoid duplicate event handlers.
     public static OneTimeMessage oneTimeMessage;
-    public static TooltipPriceDisplay tooltipPriceDisplay;
 
     // Helper variables.
     public static boolean showVigilanceGuiWithNextTick = false;
 
     public static void initializeFeatures() {
         oneTimeMessage = new OneTimeMessage();
-        tooltipPriceDisplay = new TooltipPriceDisplay();
     }
 
     @SubscribeEvent @SuppressWarnings("unused")
@@ -104,9 +101,6 @@ public class Events {
                             Slot slot = ((GuiChest) e.gui).getSlotUnderMouse();
                             if(slot != null) element.onClickSlot(e, slot);
                         }
-                        if(element instanceof ChestItemDisplay) {
-                            ((ChestItemDisplay) element).resetHoveredItem();
-                        }
                     }
                 });
     }
@@ -119,13 +113,6 @@ public class Events {
             Overlay.ALL.stream()
                     .filter(o -> o instanceof ProfitPerHourOverlay).findFirst()
                     .ifPresent(o -> ((ProfitPerHourOverlay) o).onWorldLoad(e.world));
-        }
-    }
-
-    @SubscribeEvent @SuppressWarnings("unused")
-    public void onRenderToolTip(ItemTooltipEvent e) {
-        if(AttributeMod.config.modEnabled && AttributeMod.config.tooltipAttributePriceEnabled) {
-            tooltipPriceDisplay.onRenderToolTip(e);
         }
     }
 

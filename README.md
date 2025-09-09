@@ -6,20 +6,6 @@ This mod is **not public** and won't work without a **key**. Please visit [Kuudr
 *I am still learning modding and I just don't have the capacity for too many users, I hope you will understand.*
 ## Features
 All features can be configured using the settings GUI: `/attributemod` or `/am`.
-### Tooltip Attribute Price Overlay
-Shows attribute values and an estimated total value when hovering over an item with attributes. Prices are refreshed every minute.
-
-![](https://github.com/anderle02/attributemod/blob/master/images/tooltip_attribute_values.png)
-### Chest Value Overlay
-This overlay summarizes all items with attributes in a chest, including their price. Items get highlighted if you hover over the list, and if you click an item, your mouse will be automatically moved to that item.
-- Hold `Shift` to move the item directly to your inventory.
-- Copy your items to clipboard using the `[Copy]` button.
-- Choose between 5 different (compact or wide) overlay styles and choose the amount of displayed items with `/attributemod`.
-- **NEW:** The overlay now supports scrolling!
-
-Watch the video:
-
-https://github.com/user-attachments/assets/542d742f-b7c8-46d9-914a-b5b668e23d18
 ### Kuudra Profit Overlay
 This overlay appears when you open a Kuudra reward chest.
 - lists items in the chest including their value
@@ -35,7 +21,7 @@ Manage the profit tracker with `/profittracker <start|stop|reset>`.
 OR: Let the tracker only count the time when you are in Kuudra.
 
 ![](https://github.com/anderle02/attributemod/blob/master/images/profit_per_hour.png)
-### Command `/attributeprice` or `/ap`
+### [OLD] Command `/attributeprice` or `/ap`
 Shows the cheapest items with an attribute. Works for armor, equipment, fishing items and weapons. You can hover over an item or **click to directly buy**.
 Basically, it works exactly the same as my discord bot.
 
@@ -44,7 +30,7 @@ Entering a level is optional. Use Minecraft's auto-completion for faster use.
 
 ![](https://github.com/anderle02/attributemod/blob/master/images/ap_1.png)
 ![](https://github.com/anderle02/attributemod/blob/master/images/ap_2.png)
-### Command `/attributeupgrade` or `/au`
+### [OLD] Command `/attributeupgrade` or `/au`
 Shows the cheapest way of upgrading an attribute on an item to a specific level. The command will show you all items needed to buy, and the total price. Usually, upgrading like this is way cheaper than directly buying a Level 10 piece.
 
 **Usage:** `/au <attribute> <item> <startlevel> <endlevel>`
@@ -63,8 +49,8 @@ Displays stats of teammates in Kuudra Party Finder.
 ## Security Note
 This is the **only** way to download the Attribute Mod. It's hosted nowhere else than [here](https://github.com/anderle02/attributemod/releases/latest). Anyone trying to send you this mod **is trying to steal your account**, especially if it's "free".
 ## Credits
-- The settings page was made using [Vigilance](https://github.com/EssentialGG/Vigilance). Clean look and easy to use, would definitely recommend!
-- I'm using the [1.8.9 Forge Mod Template](https://github.com/nea89o/Forge1.8.9Template) by nea89o. So good if you have no idea of how dependencies work...
+- The settings page was made using [Vigilance](https://github.com/EssentialGG/Vigilance).
+- I'm using the [1.8.9 Forge Mod Template](https://github.com/nea89o/Forge1.8.9Template) by nea89o.
 ## Join Kuudra Gang!
 Chat with fellow Skyblock and Kuudra gamers, or ask questions about the mod. You can try out my discord bot, which has way more features than this mod.
 
